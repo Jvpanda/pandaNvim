@@ -1,5 +1,3 @@
--- Set <space> as the leader key
--- set EEEEE
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
@@ -216,6 +214,8 @@ require('lazy').setup({
         { '<leader>w', group = '[W]orkspace' },
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
+        { '<leader>b', group = 'de[B]ugger' },
+        { '<leader>sc', group = '[S]earch [C]ustom Commands' },
       },
     },
   },
@@ -310,6 +310,14 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sn', function()
         builtin.find_files { cwd = vim.fn.stdpath 'config' }
       end, { desc = '[S]earch [N]eovim files' })
+      -- Shortcut to the currect directories files
+      vim.keymap.set('n', '<leader>scd', function()
+        builtin.find_files { cwd = vim.fn.expand '%:p:h' }
+      end, { desc = '[S]earch [C]urrent [D]irectory files' })
+      -- shortcut to my repos
+      vim.keymap.set('n', '<leader>scr', function()
+        builtin.find_files { cwd = '~\\source\\repos' }
+      end, { desc = '[S]earch [C]urrent [R]epo files' })
     end,
   },
 
