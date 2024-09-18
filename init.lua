@@ -243,7 +243,7 @@ require('lazy').setup({
 
         -- `build` is used to run some command when the plugin is installed/updated.
         -- This is only run then, not every time Neovim starts up.
-        build = 'make',
+        build = 'cmake',
 
         -- `cond` is a condition used to determine whether this plugin should be
         -- installed and loaded.
@@ -795,5 +795,6 @@ require('lazy').setup({
 vim.api.nvim_set_hl(0, 'Normal', { bg = '#1f191e' })
 vim.api.nvim_set_hl(0, 'NormalFloat', { bg = '#1f191e' })
 
+require('nvim-treesitter.install').compilers = { 'zig' }
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
