@@ -93,9 +93,10 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
-vim.keymap.set('n', '<F10>', ':!start nvim<CR>', { desc = 'Create new nvim window' })
-vim.keymap.set('n', '<F11>', ':w<CR>:!g++ -g % -o "%:p:h\\main.exe"<CR>', { desc = 'Build with c++' })
-vim.keymap.set('n', '<F12>', ':cd %:p:h<CR> :vsplit<CR> :term cmd /C main.exe<CR>', { desc = 'Launches current main exe of current folder' })
+vim.keymap.set('n', '<F9>', ':!start nvim<CR>', { desc = 'Create new nvim window' })
+vim.keymap.set('n', '<F10>', ':cd %:p:h<CR>', { desc = 'Changes directory to the one of the current editing file' })
+vim.keymap.set('n', '<F11>', ':w<CR>:!g++ -g % -o "%:p:h\\main.exe"<CR>', { silent = true, desc = 'Build with c++' })
+vim.keymap.set('n', '<F12>', ':cd %:p:h<CR> :vsplit<CR> :term cmd /C main.exe<CR>i', { silent = true, desc = 'Launches current main exe of current folder' })
 
 -- [[ Basic Autocommands ]]
 -- Highlight when yanking (copying) text
@@ -780,8 +781,8 @@ require('lazy').setup({
   },
 })
 
-vim.api.nvim_set_hl(0, 'Normal', { bg = '#1f191e' })
-vim.api.nvim_set_hl(0, 'NormalFloat', { bg = '#1f191e' })
+vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
+vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'none' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
