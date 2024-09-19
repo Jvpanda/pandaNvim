@@ -37,10 +37,5 @@ git clone https://github.com/jvpanda/kickstart.nvim.git "${env:LOCALAPPDATA}\nvi
 
 * What if I want to "uninstall" this configuration:
   * See [lazy.nvim uninstall](https://github.com/folke/lazy.nvim#-uninstalling) information
-    * [kickstart-modular.nvim](https://github.com/dam9000/kickstart-modular.nvim)
-  * Discussions on this topic can be found here:
-    * [Restructure the configuration](https://github.com/nvim-lua/kickstart.nvim/issues/218)
-    * [Reorganize init.lua into a multi-file setup](https://github.com/nvim-lua/kickstart.nvim/pull/473)
-
 	*May need to run a fancy looking command if my fzm is giving me problemos
 

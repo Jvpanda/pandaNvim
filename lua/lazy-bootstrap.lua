@@ -12,3 +12,34 @@ vim.opt.rtp:prepend(lazypath)
 
 --[[ Install plugins and point to their configurations ]]
 --    :Lazy
+require('lazy').setup({
+  -- [[ One Line Installs ]]
+  -- Things I don't care or need to conigure much
+  'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
+  -- Highlight todo, notes, etc in comments
+  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
+  
+  --[[ AutoLoad ]]
+    { import = 'plugins' },
+}, {
+
+  ui = {
+    -- If you are using a Nerd Font: set icons to an empty table which will use the
+    -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
+    icons = vim.g.have_nerd_font and {} or {
+      cmd = '⌘',
+      config = '🛠',
+      event = '📅',
+      ft = '📂',
+      init = '⚙',
+      keys = '🗝',
+      plugin = '🔌',
+      runtime = '💻',
+      require = '🌙',
+      source = '📄',
+      start = '🚀',
+      task = '📌',
+      lazy = '💤 ',
+    },
+  },
+})
