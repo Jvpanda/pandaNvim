@@ -14,10 +14,10 @@ vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = 'Jump a half page down and rese
 vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = 'Jump a half page up and reset cursor to middle' })
 
 -- disbables arrows in normal mode with text
-vim.keymap.set('n', '<left>', '<cmd>echo "Use h to move!!"<CR>')
-vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
-vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
-vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+vim.keymap.set('i', '<left>', '<cmd>echo "Use h to move!!"<CR>')
+vim.keymap.set('i', '<right>', '<cmd>echo "Use l to move!!"<CR>')
+vim.keymap.set('i', '<up>', '<cmd>echo "Use k to move!!"<CR>')
+vim.keymap.set('i', '<down>', '<cmd>echo "Use j to move!!"<CR>')
 
 -- Keybinds to make split navigation easier.
 vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left window' })
@@ -29,6 +29,8 @@ vim.keymap.set('n', '<F9>', ':!start nvim<CR>', { desc = 'Create new nvim window
 vim.keymap.set('n', '<F10>', ':cd %:p:h<CR>', { desc = 'Changes directory to the one of the current editing file' })
 vim.keymap.set('n', '<F11>', ':w<CR>:!g++ -g % -o "%:p:h\\main.exe"<CR>', { silent = true, desc = 'Build with c++' })
 vim.keymap.set('n', '<F12>', ':cd %:p:h<CR> :vsplit<CR> :term cmd /C main.exe<CR>i', { silent = true, desc = 'Launches current main exe of current folder' })
+
+vim.keymap.set('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, noremap = true, desc = 'Toggles Undotree' })
 
 -- [[ Basic Autocommands ]]
 -- Highlight when yanking (copying) text
