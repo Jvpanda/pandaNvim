@@ -6,7 +6,7 @@ return {
     config = function()
       require('nvim-treesitter.install').compilers = { 'zig' }
       require('nvim-treesitter.configs').setup {
-        ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+        ensure_installed = { 'python', 'c', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'vim', 'vimdoc', 'cpp' },
         auto_install = true,
         sync_install = false,
         ignore_install = {},
@@ -15,7 +15,7 @@ return {
           enable = true,
           additional_vim_regex_highlighting = { 'ruby', 'c++' },
         },
-        indent = { enable = true, disable = { 'ruby', 'c++' } },
+        indent = { enable = true, disable = { 'ruby' } },
       }
     end,
   },
@@ -38,4 +38,3 @@ return {
     },
   },
 }
-

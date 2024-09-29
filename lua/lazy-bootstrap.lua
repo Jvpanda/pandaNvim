@@ -16,11 +16,8 @@ require('lazy').setup({
   -- [[ One Line Installs ]]
   -- Things I don't care or need to conigure much
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
-  -- Highlight todo, notes, etc in comments
-  { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
-  
   --[[ AutoLoad ]]
-    { import = 'plugins' },
+  { import = 'plugins' },
 }, {
 
   ui = {
@@ -43,3 +40,4 @@ require('lazy').setup({
     },
   },
 })
+
