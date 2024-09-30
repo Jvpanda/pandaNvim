@@ -1,5 +1,3 @@
-# kickstart.nvim
-
 ### Install Neovim
 
 Kickstart.nvim targets *only* the latest
@@ -37,5 +35,5 @@ git clone https://github.com/jvpanda/kickstart.nvim.git "${env:LOCALAPPDATA}\nvi
 
 * What if I want to "uninstall" this configuration:
   * See [lazy.nvim uninstall](https://github.com/folke/lazy.nvim#-uninstalling) information
-	*May need to run a fancy looking command if my fzm is giving me problemos
+	* May need to run a fancy looking command if my fzm is giving me problemos
 
