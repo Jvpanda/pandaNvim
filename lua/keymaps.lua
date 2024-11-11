@@ -32,6 +32,8 @@ vim.keymap.set('n', '<F12>', ':cd %:p:h<CR> :vsplit<CR> :term cmd /C main.exe<CR
 
 vim.keymap.set('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, noremap = true, desc = 'Toggles Undotree' })
 
+vim.keymap.set('i', '{', '{<CR>}<C-[>k$a<CR>')
+
 -- [[ Basic Autocommands ]]
 -- Highlight when yanking (copying) text
 vim.api.nvim_create_autocmd('TextYankPost', {
