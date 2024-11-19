@@ -37,12 +37,25 @@ git clone https://github.com/jvpanda/kickstart.nvim.git "%localappdata%\nvim"
 <details><summary>Ubuntu Install Steps</summary>
 
 ```
+sudo snap install --beta nvim --classic
 sudo apt update
 sudo apt install make gcc ripgrep unzip git xclip neovim curl cmake python3 nodejs
 sudo snap install zig --classic --beta
 only needed if there's a new computer that only utilized Linux
 wget https://download.jetbrains.com/fonts/JetBrainsMono-2.304.zip
 Then lookup the rest.
+```
+
+</details>
+
+<details><summary>Extra steps for clang</summary>
+
+```
+sudo add-apt-repository universe
+Thats to get the repo that has it
+Sudo apt update
+sudo apt install clangd clang g++
+
 ```
 
 </details>
