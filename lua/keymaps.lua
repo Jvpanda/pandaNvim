@@ -9,6 +9,7 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 
 --Exits Insert mode another way
 vim.keymap.set('i', 'jj', '<Esc>', { desc = 'Exit insert mode shortcut' })
+
 --Remaps jumps to also center screen
 vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = 'Jump a half page down and reset cursor to middle' })
 vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = 'Jump a half page up and reset cursor to middle' })
@@ -25,14 +26,24 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
-vim.keymap.set('n', '<F9>', ':!start nvim<CR>', { desc = 'Create new nvim window' })
-vim.keymap.set('n', '<F10>', ':cd %:p:h<CR>', { desc = 'Changes directory to the one of the current editing file' })
-vim.keymap.set('n', '<F11>', ':w<CR>:!g++ -g *.cpp -o "%:p:h\\main.exe"<CR>', { silent = true, desc = 'Build with c++' })
-vim.keymap.set('n', '<F12>', ':cd %:p:h<CR> :vsplit<CR> :term cmd /C main.exe<CR>i', { silent = true, desc = 'Launches current main exe of current folder' })
+-- Directory and compiler
+vim.keymap.set('n', '<F10>', '<cmd>cd %:p:h<CR>', { desc = 'Changes directory to the one of the current editing file' })
+vim.keymap.set('n', '<F11>', '<cmd>w<CR><cmd>!g++ -g *.cpp -o "%:p:h\\main.exe"<CR>', { silent = true, desc = 'Build with c++' })
 
+vim.keymap.set(
+  'n',
+  '<F12>',
+  '<cmd>cd %:p:h<CR><cmd>vsplit<CR><cmd>term cmd /C main.exe<CR>i',
+  { silent = true, desc = 'Launches current main exe of current folder' }
+)
+
+-- Undotree
 vim.keymap.set('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, noremap = true, desc = 'Toggles Undotree' })
 
-vim.keymap.set('i', '{', '{<CR>}<C-[>k$a<CR>')
+-- to create a pair of curly braces
+vim.keymap.set('i', '{', '{<CR>}<C-[>k$a<CR>', {
+  silent = true,
+})
 
 -- [[ Basic Autocommands ]]
 -- Highlight when yanking (copying) text
