@@ -40,11 +40,6 @@ vim.keymap.set(
 -- Undotree
 vim.keymap.set('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, noremap = true, desc = 'Toggles Undotree' })
 
--- to create a pair of curly braces
-vim.keymap.set('i', '{', '{<CR>}<C-[>k$a<CR>', {
-  silent = true,
-})
-
 -- [[ Basic Autocommands ]]
 -- Highlight when yanking (copying) text
 vim.api.nvim_create_autocmd('TextYankPost', {
