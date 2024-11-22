@@ -48,14 +48,24 @@ Then lookup the rest.
 
 </details>
 
-<details><summary>Extra steps for clang</summary>
+<details><summary>Extra steps for clang/d, g++, go, cmake</summary>
 
 ```
 sudo add-apt-repository universe
 Thats to get the repo that has it
-Sudo apt update
-sudo apt install clangd clang g++
+sudo apt update
+sudo apt install clangd clang g++ golang-go cmake
+```
 
+</details>
+
+<details><summary>Master recipe</summary>
+
+```
+sudo snap install --beta nvim --classic
+sudo apt update
+sudo apt install make gcc ripgrep unzip git xclip neovim curl cmake python3 nodejs clangd clang g++ golang-go cmake
+sudo snap install zig --classic --beta
 ```
 
 </details>
