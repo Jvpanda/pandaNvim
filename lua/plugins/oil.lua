@@ -29,13 +29,23 @@ return {
             return vim.tbl_contains(folder_skip, name)
           end,
         },
+        float = {
+          padding = 2,
+          max_width = 100,
+          max_height = 35,
+          border = 'rounded',
+          win_options = {
+            winblend = 0,
+            winbar = '%{v:lua.CustomOilBar()}',
+          },
+        },
       }
 
       -- Open parent directory in current window
-      vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' })
+      vim.keymap.set('n', '<space>-', '<CMD>Oil<CR>', { desc = 'Open parent directory' })
 
       -- Open parent directory in floating window
-      vim.keymap.set('n', '<space>-', require('oil').toggle_float)
+      vim.keymap.set('n', '-', require('oil').toggle_float)
     end,
   },
 }
