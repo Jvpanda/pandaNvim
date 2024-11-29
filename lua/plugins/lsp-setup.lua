@@ -140,7 +140,6 @@ return {
           },
         },
       }
-
       --  :Mason to check installations
       --  You can press `g?` for help in this menu.
       require('mason').setup()
@@ -164,7 +163,11 @@ return {
           end,
         },
       }
+      local gdscript_config = {
+        capabilities = capabilities,
+        settings = {},
+      }
+      require('lspconfig').gdscript.setup(gdscript_config)
     end,
   },
 }
-
