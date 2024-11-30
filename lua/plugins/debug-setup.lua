@@ -146,7 +146,7 @@ return {
         request = 'launch', -- could be launch or attack
         name = 'Launch Main Scene',
         --specific to gdscript
-        project = '${workspaceFolder}/${file}',
+        project = '${workspaceFolder}',
       },
     }
 
