@@ -35,3 +35,8 @@ vim.api.nvim_create_user_command('GodotPassCMD', function(opts)
     vim.api.nvim_win_set_cursor(0, { opt2Num, opt3Num })
   end
 end, { nargs = '*' })
+
+P = function(v)
+  print(vim.inspect(v))
+  return v
+end

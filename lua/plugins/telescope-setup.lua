@@ -1,5 +1,5 @@
 return {
-	{ -- Fuzzy Finder (files, lsp, etc)
+  { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
     event = 'VimEnter',
     branch = '0.1.x',
@@ -86,10 +86,10 @@ return {
       vim.keymap.set('n', '<leader>scd', function()
         builtin.find_files { cwd = vim.fn.expand '%:p:h' }
       end, { desc = '[S]earch [C]urrent [D]irectory files' })
-      -- shortcut to my repos
-      vim.keymap.set('n', '<leader>scr', function()
-        builtin.find_files { cwd = '~\\source\\repos' }
-      end, { desc = '[S]earch [C]urrent [R]epo files' })
+      -- shortcut to my source files
+      vim.keymap.set('n', '<leader>scs', function()
+        builtin.find_files { cwd = '~/source' }
+      end, { desc = '[S]earch [C]urrent [S]ource files' })
     end,
   },
 }
