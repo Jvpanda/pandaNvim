@@ -27,7 +27,9 @@ vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower win
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
 -- Directory and compiler
-vim.keymap.set('n', '<F10>', '<cmd>cd %:p:h<CR>', { desc = 'Changes directory to the one of the current editing file' })
+vim.keymap.set('n', '<F10>', function()
+  vim.cmd.cd(vim.fn.expand '%:p:h')
+end, { desc = 'Changes directory to the one of the current editing file' })
 vim.keymap.set('n', '<F11>', '<cmd>wa<CR><cmd>!g++ -g *.cpp -o "%:p:h/main.exe"<CR>', { silent = true, desc = 'Build with c++' })
 
 vim.keymap.set(
@@ -39,3 +41,9 @@ vim.keymap.set(
 
 -- Undotree
 vim.keymap.set('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, noremap = true, desc = 'Toggles Undotree' })
+
+-- development
+vim.keymap.set('n', '<leader>x', ':w<CR>:source %<CR>', { noremap = true, desc = 'Saves then runs current file' })
+vim.keymap.set('n', '<leader>z', function()
+  vim.cmd.suspend()
+end, { noremap = true, desc = 'Suspends current nvim instance' })
