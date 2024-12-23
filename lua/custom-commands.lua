@@ -144,6 +144,12 @@ local function setUIBufferUIKeymaps(contextBuffer)
     end, { buffer = true })
 end
 
+local function setTerminalBufferKeymaps()
+    vim.keymap.set('n', '<esc>', function()
+        deleteCurrentWindow()
+    end, { buffer = true })
+end
+
 local function create_buffer_menu()
     local contextBuffer = vim.api.nvim_get_current_buf()
     local bufferList = getBuffers()
@@ -172,6 +178,5 @@ end)
 --ctrl w w to switch between windows
 vim.keymap.set('n', '<f12>', function()
     run_cpp_Program()
+    setTerminalBufferKeymaps()
 end, {})
-
-vim.keymap.set('t', '<esc><esc>', '<c-\\><c-n>')
