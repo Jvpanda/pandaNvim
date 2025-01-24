@@ -30,7 +30,11 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 vim.keymap.set('n', '<F10>', function()
     vim.cmd.cd(vim.fn.expand '%:p:h')
 end, { desc = 'Changes directory to the one of the current editing file' })
-vim.keymap.set('n', '<F11>', '<cmd>wa<CR><cmd>!g++ -g *.cpp -o "%:p:h/main.exe"<CR>', { silent = true, desc = 'Build with c++' })
+if vim.fn.has 'win32' == 1 then
+    vim.keymap.set('n', '<F11>', '<cmd>wa<CR><cmd>!wsl g++ -g *.cpp -o "%:p:h/main.exe"<CR>', { silent = true, desc = 'Build with c++' })
+else
+    vim.keymap.set('n', '<F11>', '<cmd>wa<CR><cmd>!g++ -g *.cpp -o "%:p:h/main.exe"<CR>', { silent = true, desc = 'Build with c++' })
+end
 
 -- Undotree
 vim.keymap.set('n', '<leader>u', ':UndotreeToggle<CR>', { silent = true, noremap = true, desc = 'Toggles Undotree' })
