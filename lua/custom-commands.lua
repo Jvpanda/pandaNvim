@@ -37,11 +37,13 @@ vim.api.nvim_create_user_command('GodotPassCMD', function(opts)
 end, { nargs = '*' })
 
 P = function(v)
+    print(v)
     print(vim.inspect(v))
     return v
 end
 
 --{{My custom functions}}
+
 --create_floating_window
 local function create_floating_window(opts)
     opts = opts or {}
@@ -75,14 +77,21 @@ local function create_floating_window(opts)
     vim.api.nvim_open_win(buf, true, win_config)
 end
 
-local bufferHistory = {}
+local function deleteCurrentWindow(isTerminal)
+    isTerminal = isTerminal or false
 
---BUffer Selector
-local function deleteCurrentWindow()
     local buf = vim.fn.bufnr()
     vim.cmd.q()
-    vim.api.nvim_buf_delete(buf, {})
+
+    if isTerminal then
+        vim.api.nvim_buf_delete(buf, { force = true })
+    else
+        vim.api.nvim_buf_delete(buf, {})
+    end
 end
+
+--BUffer Selector
+local bufferHistory = {}
 
 local function getBuffers()
     local buffers = {}
@@ -111,6 +120,9 @@ local function setUIBufferUIKeymaps(contextBuffer)
     vim.keymap.set('n', '<CR>', function()
         local line = vim.fn.getline '.'
         local hasElement = false
+        if line == '--------------' then
+            return
+        end
 
         for i = 1, 3 do
             if bufferHistory[i] == line then
@@ -126,7 +138,7 @@ local function setUIBufferUIKeymaps(contextBuffer)
             table.remove(bufferHistory, 4)
         end
 
-        local num = line:match '^(.* )'
+        local num = line:match '^(%S* )'
         local numConversion = tonumber(num) + 0
         deleteCurrentWindow()
         vim.api.nvim_set_current_buf(numConversion)
@@ -134,6 +146,11 @@ local function setUIBufferUIKeymaps(contextBuffer)
     vim.keymap.set('n', 'D', function()
         local num = vim.fn.getline('.'):match '^(.* )'
         local numConversion = tonumber(num) + 0
+        for v in ipairs(bufferHistory) do
+            if bufferHistory[v] == vim.fn.getline '.' then
+                table.remove(bufferHistory, v)
+            end
+        end
         if contextBuffer == numConversion then
             deleteCurrentWindow()
             vim.api.nvim_buf_delete(numConversion, {})
@@ -141,12 +158,6 @@ local function setUIBufferUIKeymaps(contextBuffer)
             vim.api.nvim_buf_delete(numConversion, {})
             vim.api.nvim_del_current_line()
         end
-    end, { buffer = true })
-end
-
-local function setTerminalBufferKeymaps()
-    vim.keymap.set('n', '<esc>', function()
-        deleteCurrentWindow()
     end, { buffer = true })
 end
 
@@ -161,22 +172,148 @@ local function create_buffer_menu()
     setUIBufferUIKeymaps(contextBuffer)
 end
 
---custom terminal window
-local function run_cpp_Program()
-    --vim.cmd.cd(vim.fn.expand '%:p:h')
-    --vim.cmd.wa()
-    --vim.cmd '!g++ -g *.cpp -o "%:p:h/main.exe"'
-    create_floating_window { width = 0.25, height = 0.75, col = 1, row = 0 }
-    vim.cmd.terminal '%:p:h/main.exe'
-end
-
---keymaps
 vim.keymap.set('n', '<leader>j', function()
     create_buffer_menu()
-end)
+end, { noremap = true, desc = 'Buffer Menu' })
 
---ctrl w w to switch between windows
-vim.keymap.set('n', '<f12>', function()
-    run_cpp_Program()
-    setTerminalBufferKeymaps()
-end, {})
+-- [[Compiler Settings]]
+
+local homeDirectory = 'unset'
+local setHomeAttempts = 0
+local buildType = 'Release'
+
+--custom terminal window for running cpps
+local function runCPPWindows()
+    create_floating_window { width = 0.25, height = 0.75, col = 1, row = 0 }
+    local filepath = homeDirectory:match '^.*[/\\]' .. 'build\\' .. buildType .. '\\execBinary.exe'
+    vim.cmd.terminal(filepath)
+end
+
+--custom terminal window for running cpps
+local function runCPPWSL()
+    create_floating_window { width = 0.25, height = 0.75, col = 1, row = 0 }
+    local filepath = vim.fn.expand '%:p:h' .. 'main.exe'
+    vim.cmd.terminal(filepath)
+end
+
+local function setTerminalBufferKeymaps()
+    vim.keymap.set({ 'n' }, '<esc>', function()
+        deleteCurrentWindow(true)
+    end, { buffer = true })
+    --vim.keymap.set('t', '<c-[>', '<c-\\><c-n>', { buffer = true })
+end
+
+--cmake stuff
+local function createCmakeTxt()
+    if vim.fn.filereadable '../CMakeLists.txt' == 0 then
+        local file = io.open('../CMakeLists.txt', 'w')
+        if file ~= nil then
+            file:write 'cmake_minimum_required(VERSION 3.10)\nproject("FillerProjectName")\n\nadd_executable(execBinary src/main.cpp)'
+            file:close()
+            print 'Created cmake txt'
+        end
+    end
+end
+
+local function createCmakeBuildFolder()
+    if vim.fn.isdirectory '../build' == 0 then
+        vim.fn.mkdir '../build'
+        print 'Created build dir'
+    end
+end
+
+--compiler keymaps
+
+local function bindWindowsCompilerKeymaps()
+    vim.keymap.set('n', '<F9>', function()
+        if vim.fn.expand '%:p:t' == 'main.cpp' then
+            vim.cmd.cd(vim.fn.expand '%:p:h')
+            homeDirectory = vim.fn.expand '%:p:h'
+            createCmakeBuildFolder()
+            createCmakeTxt()
+            setHomeAttempts = 0
+            print('Home set to ' .. homeDirectory)
+        else
+            if setHomeAttempts ~= 1 then
+                vim.notify 'This is not a main.cpp, press once more to set this as your home'
+            end
+            setHomeAttempts = setHomeAttempts + 1
+        end
+
+        if setHomeAttempts == 2 then
+            local input = vim.fn.input { default = 'y', cancel_return = 'abort', prompt = 'Are you sure you would like to create here?(Y/n)' }
+            if input == 'Y' or input == 'y' then
+                vim.cmd.cd(vim.fn.expand '%:p:h')
+                homeDirectory = vim.fn.expand '%:p:h'
+                createCmakeBuildFolder()
+                createCmakeTxt()
+                setHomeAttempts = 0
+                print('Home set to ' .. homeDirectory)
+            else
+                setHomeAttempts = 0
+            end
+        end
+    end)
+
+    vim.keymap.set('n', '<F10>', function()
+        if homeDirectory ~= 'unset' then
+            print 'Building with standard build commands...'
+            local result = vim.fn.system { 'cmake', '..', '-B ../build/' }
+            vim.notify('----\n' .. result .. '----')
+        else
+            vim.notify 'Please set a home directory'
+        end
+    end)
+
+    vim.keymap.set('n', '<F11>', function()
+        if homeDirectory ~= 'unset' then
+            vim.cmd.wa()
+            print('Compiling... with build type ' .. buildType)
+            local filepath = homeDirectory:match '^.*[/\\]' .. 'build/'
+            local result = vim.fn.system { 'cmake', '--build', filepath, '--config ' .. buildType }
+            vim.notify('----\n' .. result .. '----')
+        else
+            vim.notify 'Please set a home directory'
+        end
+    end)
+
+    vim.keymap.set('n', '<f12>', function()
+        if homeDirectory ~= 'unset' then
+            runCPPWindows()
+            setTerminalBufferKeymaps()
+        else
+            vim.notify 'Please set a home directory'
+        end
+    end, {})
+
+    vim.keymap.set('n', '<leader>p<f11>', function()
+        local input = vim.fn.input { default = 'Release', cancel_return = 'abort', prompt = 'Choose compile build(Release or Debug): ' }
+        if input ~= 'abort' then
+            if input == 'Debug' then
+                buildType = 'Debug'
+            else
+                buildType = 'Release'
+            end
+        end
+    end, { desc = 'Set to Release or Debug' })
+end
+
+local function bindWSLCompileKeymaps()
+    vim.keymap.set('n', '<F10>', function()
+        vim.cmd.cd(vim.fn.expand '%:p:h')
+    end, { desc = 'Changes directory to the one of the current editing file' })
+
+    vim.keymap.set('n', '<F11>', '<cmd>wa<CR><cmd>!g++ -g *.cpp -o "%:p:h/main.exe"<CR>', { silent = true, desc = 'Build with c++' })
+
+    --ctrl w w to switch between windows
+    vim.keymap.set('n', '<f12>', function()
+        runCPPWSL()
+        setTerminalBufferKeymaps()
+    end, {})
+end
+
+if vim.fn.has 'win32' == 0 then
+    bindWSLCompileKeymaps()
+else
+    bindWindowsCompilerKeymaps()
+end
