@@ -40,15 +40,6 @@ return {
                     },
                 },
             }
-
-            -- Open parent directory in current window
-            vim.keymap.set('n', '<space>p-', '<CMD>Oil<CR>', { desc = 'Open parent directory in non floating window' })
-            vim.keymap.set('n', '<space>ps', function()
-                require('oil').toggle_float '~/source/'
-            end, { desc = 'Open Source Dir' })
-
-            -- Open parent directory in floating window
-            vim.keymap.set('n', '-', require('oil').toggle_float)
         end,
     },
 }
