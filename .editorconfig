@@ -1,0 +1,6 @@
+root = true
+
+[*{lua, txt}]
+tab_width = 8
+indent_style = space
+indent_size = 4

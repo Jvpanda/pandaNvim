@@ -1,9 +1,9 @@
 -- NOTE: "plugin-setup" means there's more than one plugin being setup in the file
 -- [[Setting Options]]
-require 'options'
+require "options"
 -- [[ Sets up all plugins ]]
-require 'lazy-bootstrap'
+require "lazy-bootstrap"
 -- [[ Basic Keymaps]]
-require 'keymaps'
+require "keymaps"
 -- [[Sets Custom Commands and Autocommands]]
-require 'custom-commands'
+require "custom-commands"

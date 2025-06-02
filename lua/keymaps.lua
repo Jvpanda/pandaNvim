@@ -26,7 +26,6 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 vim.keymap.set('n', '<leader>x', ':w<CR>:source %<CR>', { noremap = true, desc = 'Saves then runs current file' })
 
 -- line numbers for school
--- :%s/^/\=line('.').". "
 vim.keymap.set('n', '<leader>pp', function()
     vim.cmd '%s/^/\\=line(\'.\').". "'
     vim.cmd 'nohlsearch'
@@ -46,3 +45,20 @@ vim.keymap.set('n', '-', require('oil').toggle_float)
 vim.keymap.set('n', '<space>ps', function()
     require('oil').toggle_float '~/source/'
 end, { desc = 'Open Source Dir' })
+
+-- [[Set current window to half the width of the screen]]
+vim.keymap.set('n', '<leader>po', function()
+    local width = math.floor(vim.o.columns * 0.5)
+    vim.api.nvim_win_set_width(0, width)
+end, { desc = 'Set current window to hald the editor width' })
+
+vim.keymap.set('i', '<C-S-z>', function()
+    local row, col = vim.api.nvim_win_get_cursor(0)
+    vim.api.nvim_win_set_cursor(0, { row + 1, col })
+end)
+
+--Getting and clearing messages
+vim.keymap.set('n', '<leader>pm', ':messages<CR>', { desc = 'See messages' })
+vim.keymap.set('n', '<leader>pn', function()
+    vim.cmd.messages 'clear'
+end, { desc = 'Clear messages' })
