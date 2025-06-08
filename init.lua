@@ -1,4 +1,5 @@
 -- NOTE: "plugin-setup" means there's more than one plugin being setup in the file
+vim.cmd.colorscheme "My_Scheme"
 -- [[Setting Options]]
 require "options"
 -- [[ Sets up all plugins ]]

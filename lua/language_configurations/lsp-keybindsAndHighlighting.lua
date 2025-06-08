@@ -1,5 +1,5 @@
---Maybe one day I'll need and use a linter lol
-local LSP_keybinds = function()
+local M = {}
+M.LSPKeybindsSetup = function()
     -- we create a function that lets us more easily define mappings specific
     -- for LSP related items. It sets the mode, buffer and description for us each time.
     local map = function(keys, func, desc, mode)
@@ -45,7 +45,7 @@ local LSP_keybinds = function()
     map("grw", vim.lsp.buf.workspace_symbol, "[W]orkspace [S]ymbols")
 end
 
-local highlight_setup = function()
+M.LSPHighlightSetup = function()
     --  This function gets run when an LSP attaches to a particular buffer. AKA associating filetypes to analyzers
     vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("kickstart-lsp-attach", { clear = true }),
@@ -88,23 +88,4 @@ local highlight_setup = function()
     })
 end
 
-LSP_keybinds()
-highlight_setup()
--- LSP Plugins
--- Useful status updates for LSP.
-return {
-    {
-        "folke/lazydev.nvim",
-        ft = "lua",
-        opts = {
-            library = {
-                -- Load luvit types when the `vim.uv` word is found
-                { path = "${3rd}/luv/library", words = { "vim%.uv" } },
-            },
-        },
-    },
-    {
-        "j-hui/fidget.nvim",
-        opts = {},
-    },
-}
+return M

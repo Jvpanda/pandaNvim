@@ -2,19 +2,21 @@ local gdscript_setup = {}
 
 gdscript_setup.LSPSetup = function()
     vim.lsp.enable "gdscript"
+    local cmd = vim.lsp.rpc.connect("127.0.0.1", 6005)
 
     vim.lsp.config("gdscript", {
+        cmd = cmd,
         filetypes = { "gd", "gdscript", "gdscript3" },
         root_markers = { "project.godot", ".git" },
     })
 end
 
 -- Starts the godot server listener
-gdscript_setup.createServerAndPassCommands = function()
+gdscript_setup.createServerPassCommands = function()
     vim.api.nvim_create_user_command("Godot", function(opts)
         if opts.args == "start" then
             vim.fn.serverstart "127.0.0.1:6004"
-            print "Listen Server Started"
+            print "Listen Server For Pass Commands Started"
         elseif opts.args == "stop" then
             vim.fn.serverstop "127.0.0.1:6004"
             print "Listen Server Stopped"

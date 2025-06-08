@@ -1,14 +1,20 @@
-local arduino_setup = require "tools.arduino"
-local cpp_setup = require "tools.cpp"
-local gdscipt_setup = require "tools.gdscript"
-local python_setup = require "tools.python"
-local lua_setup = require "tools.lua_setup"
+local arduino_setup = require "language_configurations.arduino"
+local cpp_setup = require "language_configurations.cpp"
+local gdscipt_setup = require "language_configurations.gdscript"
+local python_setup = require "language_configurations.python"
+local lua_setup = require "language_configurations.lua_setup"
+local go_setup = require "language_configurations.go"
+local lspKeybindsAndHighlighing = require "language_configurations.lsp-keybindsAndHighlighting"
+
 require "tools.buffer_selector"
 
 --[[My Commands]]
-gdscipt_setup.createServerAndPassCommands()
+gdscipt_setup.createServerPassCommands()
 
---[[Enable LSP's]]
+--[[Enable and Configure LSP's]]
+lspKeybindsAndHighlighing.LSPKeybindsSetup()
+lspKeybindsAndHighlighing.LSPHighlightSetup()
+go_setup.LSPSetup()
 cpp_setup.LSPSetup()
 arduino_setup.LSPSetup()
 gdscipt_setup.LSPSetup()
@@ -46,12 +52,12 @@ local serverRunning = false
 vim.api.nvim_create_autocmd("BufEnter", {
     desc = "Runs listening server when opening a .gd",
     group = myAutogroup,
-    pattern = "*", --{ '*.gd', ' *.ino' },
+    pattern = "*",
     callback = function()
         local filetype = vim.bo.filetype
         if filetype == "cpp" or filetype == "h" then
             cpp_setup.setupKeybinds()
-        elseif serverRunning == false and filetype == "gd" then
+        elseif serverRunning == false and filetype == "gdscript" then
             vim.cmd.Godot "start"
             serverRunning = true
         elseif filetype == "arduino" then
@@ -59,3 +65,6 @@ vim.api.nvim_create_autocmd("BufEnter", {
         end
     end,
 })
+
+vim.filetype.add { extension = { se = "se" } }
+vim.filetype.add { extension = { cExample = "cExample" } }
