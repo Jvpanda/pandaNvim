@@ -2,7 +2,19 @@ syntax keyword textContext Context Background
 syntax keyword textMainIdea Main Idea
 syntax keyword textSummary Summary Conclusion
 syntax keyword textDefinition Definition Methodology Analysis
-syntax keyword textSupport Support
+syntax keyword textSupport Support Evidence 
+syntax keyword textGrammars Grammar Tense Tenses
 
 syntax region textImportant     start="IMPORTANT" end="\n"
-syntax region newLevel          start="-"         end=":"
+syntax region newLevel          start=" - "         end="\n"
+
+highlight link textContext @customColor.green
+highlight link textMainIdea @customColor.cyan
+highlight link textSummary @customColor.red
+highlight link textDefinition @customColor.yellow
+highlight link textSupport @customColor.light_mauve
+highlight link textGrammars @customColor.peach
+highlight link textImportant @customColor.red
+highlight link NewLevel @customColor.periwinkle
+
+

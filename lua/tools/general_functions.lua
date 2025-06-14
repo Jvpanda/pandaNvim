@@ -10,11 +10,11 @@ function funcs.create_floating_window(opts)
     -- calculates the ratio first then adds the line and char counts to the end result
     -- This acts as having an offset by adding onto it or it can even subtract
     local width = math.floor((vim.o.columns * (opts.width or 0.5)) + (opts.charCountWidth or 0))
-    local height = math.floor((vim.o.lines * (opts.height or 0.5)) + (opts.lineCountHeight or 0))
+    local height = math.floor((vim.o.lines * (opts.height or 0.5)) + (opts.lineHeight or 0))
 
     -- If there is no height or width then it assumes line count and char counts only
-    if opts.lineCountHeight and not opts.height then
-        height = opts.lineCountHeight
+    if opts.lineHeight and not opts.height then
+        height = opts.lineHeight
     end
     if opts.charCountWidth and not opts.width then
         width = opts.charCountWidth

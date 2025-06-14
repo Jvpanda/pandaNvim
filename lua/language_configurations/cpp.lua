@@ -1,7 +1,17 @@
 local cpp_setup = {}
 local general = require "tools.general_functions"
 local workspace = require "tools.workspace_tracker"
-local buildType = "Release"
+local cpp_opts = {
+    buildType = "Release",
+    runWindow = "floatingWindow",
+    vimFloatingWindowSize = { height = 0.45, width = 0.25, col = 1, row = 0 },
+    compileFlags = "", --need to implement
+    buildFlags = "", --need to implement
+    workspaceModifier = "", --need to implement
+}
+
+cpp_opts.vimFloatingWindowSize = { height = 0.45, width = 0.25, col = 1, row = 0 }
+cpp_opts.runWindow = "floatingWindow"
 
 --[[LSP Setttings]]
 
@@ -168,15 +178,33 @@ local function createCmakeTxt()
     end
 end
 
-local function addFileToCmakeTxt()
-    local file = io.open("CMakeLists.txt", "r")
-    local fileTable = {}
-    local sourceLine = 1
+local function createCmakeBuildFolder()
+    if vim.fn.isdirectory "build" == 0 then
+        vim.fn.mkdir "build"
+        print "Created build dir"
+    end
+end
 
+local function cmakeBuild()
+    if workspace.isWorkspaceSet() == false then
+        vim.notify "Please set a home directory"
+        return
+    end
+
+    print "Building with standard build commands..."
+    local result = vim.fn.system { "cmake", ".", "-DCMAKE_EXPORT_COMPILE_COMMANDS=1", "-B build/" }
+    vim.notify("----\n" .. result .. "----")
+end
+
+local function addFileToCmakeTxt()
     if workspace.isWorkspaceSet == false then
         vim.notify "Please set a workspace first"
         return
     end
+
+    local file = io.open("CMakeLists.txt", "r")
+    local fileTable = {}
+    local sourceLine = 1
 
     if file ~= nil then
         for line in file:lines() do
@@ -220,128 +248,112 @@ local function addFileToCmakeTxt()
     print "Cmake writen to succesfully"
 end
 
-local function createCmakeBuildFolder()
-    if vim.fn.isdirectory "build" == 0 then
-        vim.fn.mkdir "build"
-        print "Created build dir"
+--Compiling and running
+local function compileCPPWindows()
+    if workspace.isWorkspaceSet() == false then
+        return "Please set a home directory"
+    end
+
+    vim.cmd.wa()
+    print("Compiling... with build flags " .. cpp_opts.buildType)
+    local filepath = workspace.getWorkspace() .. "build/"
+    local result = vim.fn.system { "cmake", "--build", filepath, "--config " .. cpp_opts.buildType }
+    return result
+end
+
+local function runCPPWindows()
+    if workspace.isWorkspaceSet() == false then
+        vim.notify "Please set a home directory"
+        return
+    end
+
+    if cpp_opts.runWindow == "floatingWindow" then
+        general.create_floating_window(cpp_opts.vimFloatingWindowSize)
+        local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
+        vim.cmd.terminal(filepath)
+        general.setDelWinKeymapForBuffer()
+    elseif cpp_opts.runWindow == "window" then
+        local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
+        vim.cmd "vsplit"
+        vim.cmd.terminal(filepath)
+        general.setDelWinKeymapForBuffer()
+    elseif cpp_opts.runWindow == "external" then
+        local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
+        vim.cmd("!start " .. filepath)
+    elseif cpp_opts.runWindow == "external_permanent" then
+        local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
+        vim.cmd("!start cmd /k " .. filepath)
     end
 end
 
---Compiling and running
---W32
-local function runCPPWindows()
-    general.create_floating_window { width = 1.00, height = 0.75, col = 1, row = 0 }
-    local filepath = workspace.getWorkspace() .. "build/" .. buildType .. "/execBinary.exe"
-    vim.cmd.terminal(filepath)
-end
-
-local function compileCPPWindows()
-    vim.cmd.wa()
-    print(vim.cmd.wa())
-    print("Compiling... with build type " .. buildType)
-    local filepath = workspace.getWorkspace() .. "build/"
-    local result = vim.fn.system { "cmake", "--build", filepath, "--config " .. buildType }
-    return result
-end
---WSL
-local function runCPPWSL()
-    general.create_floating_window { width = 0.25, height = 0.75, col = 1, row = 0 }
-    local filepath = vim.fn.expand "%:p:h" .. "main.exe"
-    vim.cmd.terminal(filepath)
-end
-
 --[[Keymaps]]
-local function bindWindowsCompilerKeymaps()
-    vim.keymap.set("n", "<F10>", function()
-        if workspace.isWorkspaceSet() == true then
-            createCmakeBuildFolder()
-            createCmakeTxt()
-            print "Building with standard build commands..."
-            local result = vim.fn.system { "cmake", ".", "-DCMAKE_EXPORT_COMPILE_COMMANDS=1", "-B build/" }
-            vim.notify("----\n" .. result .. "----")
-        else
-            vim.notify "Please set a home directory"
-        end
-    end)
-
-    vim.keymap.set("n", "<F11>", function()
-        if workspace.isWorkspaceSet() == true then
-            local compilationResult = compileCPPWindows()
-            vim.notify(compilationResult)
-        else
-            vim.notify "Please set a home directory"
-        end
-    end)
-
-    vim.keymap.set("n", "<f12>", function()
-        if workspace.isWorkspaceSet() == true then
-            local compilationResult = "-------\n" .. compileCPPWindows() .. "-------\n"
-            if string.find(compilationResult, "error") == nil and string.find(compilationResult, "warning") == nil then
-                local oldCommandHeight = vim.o.cmdheight
-                vim.o.cmdheight = 15
-                print(compilationResult)
-                vim.o.cmdheight = oldCommandHeight
-
-                runCPPWindows()
-                general.setDelWinKeymapForBuffer()
-            else
-                vim.notify(compilationResult)
-            end
-        else
-            vim.notify "Please set a home directory"
-        end
-    end, {})
-
-    vim.keymap.set("n", "<S-f12>", function()
-        if workspace.isWorkspaceSet() == true then
-            runCPPWindows()
-            general.setDelWinKeymapForBuffer()
-        else
-            vim.notify "Please set a home directory"
-        end
-    end, {})
-
+local function setupCppOptsKeybinds()
     vim.keymap.set("n", "<leader><F12>", "", { desc = "Compiler Settings" })
 
     vim.keymap.set("n", "<leader><F12>d", function()
-        if buildType == "Release" then
-            buildType = "Debug"
+        if cpp_opts.buildType == "Release" then
+            cpp_opts.buildType = "Debug"
             print "Set To Debug"
         else
-            buildType = "Release"
+            cpp_opts.buildType = "Release"
             print "Set To Release"
         end
     end, { desc = "Set to Release or Debug." })
 
     vim.keymap.set("n", "<leader><F12>a", function()
+        addFileToCmakeTxt()
+    end, { desc = "Adds current h and cpp to cmakelists" })
+
+    vim.keymap.set("n", "<leader><F12>r", function()
         if workspace.isWorkspaceSet() then
-            addFileToCmakeTxt()
+            general.customOptionMenu({ "external", "external_permanent", "floatingWindow", "window" }, { lineHeight = 4, width = 0.1 })
+            vim.keymap.set("n", "<CR>", function()
+                cpp_opts.runWindow = vim.fn.getline "."
+                general.deleteCurrentWindow()
+            end, { buffer = true })
         else
             print "Please set a valid home"
         end
-    end, { desc = "Adds current h and cpp to cmakelists" })
-end
-
-local function bindWSLCompileKeymaps()
-    vim.keymap.set("n", "<F10>", function()
-        vim.cmd.cd(vim.fn.expand "%:p:h")
-    end, { desc = "Changes directory to the one of the current editing file" })
-
-    vim.keymap.set("n", "<F11>", '<cmd>wa<CR><cmd>!g++ -g *.cpp -o "%:p:h/main.exe"<CR>', { silent = true, desc = "Build with c++" })
-
-    --ctrl w w to switch between windows
-    vim.keymap.set("n", "<f12>", function()
-        runCPPWSL()
-        general.setDelWinKeymapForBuffer()
-    end, {})
+    end, { desc = "Chooses which terminal the program will run on" })
 end
 
 function cpp_setup.setupKeybinds()
-    if vim.fn.has "win32" == 0 then
-        bindWSLCompileKeymaps()
-    else
-        bindWindowsCompilerKeymaps()
-    end
+    setupCppOptsKeybinds()
+
+    vim.keymap.set("n", "<F10>", function()
+        createCmakeBuildFolder()
+        createCmakeTxt()
+        cmakeBuild()
+    end)
+
+    vim.keymap.set("n", "<F11>", function()
+        local compilationResult = compileCPPWindows()
+        vim.notify(compilationResult)
+    end)
+
+    vim.keymap.set("n", "<f12>", function()
+        local compilationResult = "-------\n" .. compileCPPWindows() .. "-------\n"
+        if
+            string.find(compilationResult, "error") == nil
+            and string.find(compilationResult, "warning") == nil
+            and compilationResult ~= "Please set a home directory"
+        then
+            local oldCommandHeight = vim.o.cmdheight
+            vim.o.cmdheight = 15
+            print(compilationResult)
+            vim.o.cmdheight = oldCommandHeight
+
+            runCPPWindows()
+        else
+            vim.notify(compilationResult)
+        end
+    end, {})
+
+    vim.keymap.set("n", "<S-f12>", function()
+        runCPPWindows()
+    end, {})
 end
+
+cpp_setup.setupKeybinds()
 
 return cpp_setup

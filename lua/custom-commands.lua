@@ -65,6 +65,3 @@ vim.api.nvim_create_autocmd("BufEnter", {
         end
     end,
 })
-
-vim.filetype.add { extension = { se = "se" } }
-vim.filetype.add { extension = { cExample = "cExample" } }

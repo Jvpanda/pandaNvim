@@ -104,7 +104,7 @@ local function create_buffer_menu()
         table.insert(menuTable, bufferList[i])
     end
 
-    general.customOptionMenu(menuTable, { width = 0.15, lineCountHeight = #menuTable + 3 })
+    general.customOptionMenu(menuTable, { width = 0.15, lineHeight = #menuTable + 3 })
 
     if #bufferHistory == 0 then
         vim.fn.cursor(2, 1)
