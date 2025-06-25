@@ -11,6 +11,8 @@ return {
             end
 
             require("oil").setup {
+                delete_to_trash = true,
+
                 columns = { "icon" },
                 keymaps = {
                     ["<C-h>"] = false,
@@ -38,6 +40,19 @@ return {
                         winblend = 0,
                         winbar = "%{v:lua.CustomOilBar()}",
                     },
+                },
+                -- Configuration for the file preview window
+                preview_win = {
+                    -- Whether the preview window is automatically updated when the cursor is moved
+                    update_on_cursor_moved = true,
+                    -- How to open the preview window "load"|"scratch"|"fast_scratch"
+                    preview_method = "fast_scratch",
+                    -- A function that returns true to disable preview on a file e.g. to avoid lag
+                    disable_preview = function(filename)
+                        return false
+                    end,
+                    -- Window-local options to use for preview window buffers
+                    win_options = {},
                 },
             }
         end,

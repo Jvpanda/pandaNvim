@@ -37,6 +37,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
     end,
 })
 
+-- Save when leaving insert mode
 vim.api.nvim_create_autocmd("InsertLeave", {
     desc = "Saves when leaving insert",
     group = myAutogroup,
@@ -48,6 +49,7 @@ vim.api.nvim_create_autocmd("InsertLeave", {
     end,
 })
 
+-- Decide which keybinds to use when entering buf
 local serverRunning = false
 vim.api.nvim_create_autocmd("BufEnter", {
     desc = "Runs listening server when opening a .gd",
@@ -60,8 +62,6 @@ vim.api.nvim_create_autocmd("BufEnter", {
         elseif serverRunning == false and filetype == "gdscript" then
             vim.cmd.Godot "start"
             serverRunning = true
-        elseif filetype == "arduino" then
-            arduino_setup.setupKeybinds()
         end
     end,
 })
