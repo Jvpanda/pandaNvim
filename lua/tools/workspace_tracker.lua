@@ -5,6 +5,26 @@ workspace_tracker.getWorkspace = function()
     return workspaceDirectory
 end
 
+function workspace_tracker.workspaceRelativePath()
+    if workspace_tracker.isWorkspaceSet() == false then
+        print "Please set a workspace"
+        return
+    end
+    local tempDir = vim.fn.expand "%:p:h" .. "/"
+    local relativeDirPath = ""
+    local safetyVar = 0
+    while vim.fn.isdirectory(tempDir .. "src/") == 0 and tempDir ~= vim.fn.expand "~\\" and safetyVar < 30 do
+        relativeDirPath = vim.fn.fnamemodify(tempDir, ":h:t") .. "/" .. relativeDirPath
+        tempDir = vim.fn.fnamemodify(tempDir, ":p:h:h") .. "/"
+        safetyVar = safetyVar + 1
+    end
+    if tempDir == vim.fn.expand "~/" or safetyVar == 30 then
+        print "Home could not be set"
+        return "unset"
+    end
+    return relativeDirPath
+end
+
 workspace_tracker.isWorkspaceSet = function()
     if workspaceDirectory == "unset" then
         return false

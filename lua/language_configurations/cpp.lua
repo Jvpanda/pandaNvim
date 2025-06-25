@@ -66,7 +66,7 @@ end
 cpp_setup.LSPSetup = function()
     vim.lsp.enable "clangd"
     vim.lsp.config("clangd", {
-        cmd = { "clangd" },
+        cmd = { "clangd", "--log=error" },
         filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
         root_markers = {
             ".clangd",
@@ -169,8 +169,8 @@ local function createCmakeTxt()
             file:write(
                 "cmake_minimum_required(VERSION 3.10)\n"
                     .. 'project("FillerProjectName")\n'
-                    .. "\nset(SOURCES src/main.cpp)\n"
-                    .. "\nadd_executable(execBinary ${SOURCES})"
+                    .. "\nset(PROJECT_SOURCES src/main.cpp)\n"
+                    .. "\nadd_executable(execBinary ${PROJECT_SOURCES})"
             )
             file:close()
             print "Created cmake txt"
@@ -219,7 +219,7 @@ local function addFileToCmakeTxt()
     end
 
     for i in ipairs(fileTable) do
-        if string.find(fileTable[i], "set") and string.find(fileTable[i], "SOURCE") then
+        if string.find(fileTable[i], "set") and string.find(fileTable[i], "PROJECT_SOURCES") then
             break
         end
         sourceLine = sourceLine + 1
@@ -232,9 +232,11 @@ local function addFileToCmakeTxt()
         end
     end
 
+    local filepath = workspace.workspaceRelativePath()
+
     local newLines = string.sub(fileTable[sourceLine], 1, -3)
-    newLines = newLines .. "\n            src/" .. vim.fn.expand "%:t"
-    newLines = newLines .. "\n            src/" .. vim.fn.expand "%:t:r" .. ".cpp)\n"
+    newLines = newLines .. "\n    " .. filepath .. vim.fn.expand "%:t"
+    newLines = newLines .. "\n    " .. filepath .. vim.fn.expand "%:t:r" .. ".cpp)\n"
     fileTable[sourceLine] = newLines
 
     local fileOut = io.open("CMakeLists.txt", "w")
@@ -267,6 +269,9 @@ local function runCPPWindows()
         return
     end
 
+    local oldCommandHeight = vim.o.cmdheight
+    vim.o.cmdheight = 15
+
     if cpp_opts.runWindow == "floatingWindow" then
         general.create_floating_window(cpp_opts.vimFloatingWindowSize)
         local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
@@ -284,6 +289,8 @@ local function runCPPWindows()
         local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
         vim.cmd("!start cmd /k " .. filepath)
     end
+
+    vim.o.cmdheight = oldCommandHeight
 end
 
 --[[Keymaps]]
@@ -353,7 +360,5 @@ function cpp_setup.setupKeybinds()
         runCPPWindows()
     end, {})
 end
-
-cpp_setup.setupKeybinds()
 
 return cpp_setup

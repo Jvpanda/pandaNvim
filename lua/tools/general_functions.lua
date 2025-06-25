@@ -78,19 +78,20 @@ funcs.customOptionMenu = function(printedOptions, windowOpts)
     funcs.create_floating_window(windowOpts)
     vim.api.nvim_buf_set_lines(0, 0, -1, false, printedOptions)
 
-    local bottomLine = vim.fn.line "$"
-
     funcs.setDelWinKeymapForBuffer()
     vim.keymap.set("n", "j", function()
         local coords = vim.api.nvim_win_get_cursor(0)
+        local bottomLine = vim.fn.line "$"
         if coords[1] >= bottomLine then
             vim.api.nvim_win_set_cursor(0, { 1, coords[2] })
         else
             vim.api.nvim_win_set_cursor(0, { coords[1] + 1, coords[2] })
         end
     end, { buffer = true })
+
     vim.keymap.set("n", "k", function()
         local coords = vim.api.nvim_win_get_cursor(0)
+        local bottomLine = vim.fn.line "$"
         if coords[1] == 1 then
             vim.api.nvim_win_set_cursor(0, { bottomLine, coords[2] })
         else

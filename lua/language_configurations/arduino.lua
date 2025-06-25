@@ -102,6 +102,4 @@ arduino_setup.setupKeybinds = function()
     end, { desc = "Launches CLI serial monitor" })
 end
 
-arduino_setup.setupKeybinds()
-
 return arduino_setup
