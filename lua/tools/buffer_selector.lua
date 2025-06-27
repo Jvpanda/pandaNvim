@@ -86,7 +86,6 @@ local markAndUnmarkFavorite = function(bufferId)
         local name = vim.api.nvim_buf_get_name(0)
         vim.fn.appendbufline(name, 0, line)
     else
-        print "THIS"
         table.insert(BufferList, bufferId, FavoriteBuffers[bufferId])
         FavoriteBuffers[bufferId] = nil
 
@@ -98,6 +97,16 @@ local markAndUnmarkFavorite = function(bufferId)
     end
 end
 
+local isDividerLine = function(line)
+    local lineLen = line:len()
+    local lineStart = line:sub(1, -lineLen)
+    if lineStart == "-" then
+        return true
+    else
+        return false
+    end
+end
+
 local function setUIBufferUIKeymaps(contextBuffer)
     vim.keymap.set("n", "<Esc>", function()
         general.deleteCurrentWindow()
@@ -105,7 +114,7 @@ local function setUIBufferUIKeymaps(contextBuffer)
 
     vim.keymap.set("n", "D", function()
         local line = vim.fn.getline "."
-        if line == "---------------------" then
+        if isDividerLine(line) then
             return
         end
 
@@ -126,17 +135,29 @@ local function setUIBufferUIKeymaps(contextBuffer)
 
     vim.keymap.set("n", "F", function()
         local line = vim.fn.getline "."
-        if line == "---------------------" then
+        if isDividerLine(line) then
             return
         end
 
         local bufferId = getBufferIdUnderCursor()
         markAndUnmarkFavorite(bufferId)
-    end, {})
+    end, { buffer = true })
+
+    vim.keymap.set("n", "P", function()
+        local line = vim.fn.getline "."
+        if isDividerLine(line) then
+            return
+        end
+
+        local path = vim.fn.bufname(getBufferIdUnderCursor())
+        local rootFolder = vim.fn.fnamemodify(path, ":h:t")
+        local tail = vim.fn.fnamemodify(path, ":t")
+        vim.api.nvim_set_current_line(rootFolder .. "/" .. tail)
+    end, { buffer = true })
 
     vim.keymap.set("n", "<CR>", function()
         local line = vim.fn.getline "."
-        if line == "---------------------" then
+        if isDividerLine(line) then
             return
         end
 
@@ -152,30 +173,59 @@ end
 local function create_buffer_menu()
     local contextBuffer = vim.api.nvim_get_current_buf()
     local menuTable = {}
+    local winWidth = 0
+    local bufNameLen = 0
+    local dividerString = "---"
 
     for key_index in pairs(FavoriteBuffers) do
         table.insert(menuTable, FavoriteBuffers[key_index].id .. " " .. FavoriteBuffers[key_index].name)
+        if FavoriteBuffers[key_index] ~= nil then
+            bufNameLen = FavoriteBuffers[key_index].name:len()
+            if bufNameLen > winWidth then
+                winWidth = bufNameLen
+            end
+        end
     end
 
-    table.insert(menuTable, "---------------------")
+    local i = 0
+    while i < winWidth do
+        dividerString = dividerString .. "-"
+        i = i + 1
+    end
+
+    table.insert(menuTable, dividerString)
 
     for key_index in pairs(RecentBuffers) do
         table.insert(menuTable, RecentBuffers[key_index].id .. " " .. RecentBuffers[key_index].name)
+        if RecentBuffers[key_index] ~= nil then
+            bufNameLen = RecentBuffers[key_index].name:len()
+            if bufNameLen > winWidth then
+                winWidth = bufNameLen
+            end
+        end
     end
 
-    table.insert(menuTable, "---------------------")
+    while i < winWidth do
+        dividerString = dividerString .. "-"
+        i = i + 1
+    end
+
+    table.insert(menuTable, dividerString)
 
     for key_index in pairs(BufferList) do
         table.insert(menuTable, BufferList[key_index].id .. " " .. BufferList[key_index].name)
+        if BufferList[key_index] ~= nil then
+            bufNameLen = BufferList[key_index].name:len()
+            if bufNameLen > winWidth then
+                winWidth = bufNameLen
+            end
+        end
     end
 
-    general.customOptionMenu(menuTable, { width = 0.15, lineHeight = #menuTable + 3 })
+    general.customOptionMenu(menuTable, { charCountWidth = winWidth + 3, lineHeight = #menuTable + 3 })
 
-    if #RecentBuffers == 0 then
-        vim.fn.cursor(2, 1)
-    else
-        vim.fn.cursor(1, 1)
-    end
+    vim.fn.cursor(1, 1)
+
     setUIBufferUIKeymaps(contextBuffer)
 end
 
