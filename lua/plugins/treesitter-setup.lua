@@ -4,10 +4,11 @@ return {
         build = ':TSUpdate',
         -- I MADE THIS CONFIG AND IM SO DAMN PROUD. I LEARNED THE DIFFERENCE BETWEEN OPTS AND CONFIG AND HOW TO MAKE A CUSTOM CONFIG THAT SUITED MY NEEDS. YES. FUCK YOU FUCK YES.
         config = function()
+            require 'nvim-treesitter.install'.prefer_git = false
             if vim.fn.has 'win32' == 1 then
-                require('nvim-treesitter.install').compilers = { 'zig' }
+                require('nvim-treesitter.install').compilers = { 'clang', 'cl', 'zig' }
             else
-                require('nvim-treesitter.install').compilers = { 'gcc' }
+                require('nvim-treesitter.install').compilers = { 'gcc', 'clang', 'zig' }
             end
             require('nvim-treesitter.configs').setup {
                 ensure_installed = { 'python', 'c', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'vim', 'vimdoc', 'cpp' },
