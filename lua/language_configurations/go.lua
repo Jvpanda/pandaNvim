@@ -16,6 +16,10 @@ local function get_root(fname)
 end
 
 go_setup.LSPSetup = function()
+    if vim.fn.executable "gopls" == 0 then
+        return
+    end
+
     vim.lsp.enable "gopls"
     vim.lsp.config("gopls", {
         cmd = { "gopls" },

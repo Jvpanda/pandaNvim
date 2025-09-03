@@ -16,6 +16,10 @@ local function set_python_path(path)
 end
 
 python_setup.LSPSetup = function()
+    if vim.fn.executable "pyright-langserver" == 0 then
+        return
+    end
+
     vim.lsp.enable "pyright"
     vim.lsp.config("pyright", {
         cmd = { "pyright-langserver", "--stdio" },

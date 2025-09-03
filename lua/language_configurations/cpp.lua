@@ -64,6 +64,10 @@ end
 ---@field offsetEncoding? string
 
 cpp_setup.LSPSetup = function()
+    if vim.fn.executable "clangd" == 0 then
+        return
+    end
+
     vim.lsp.enable "clangd"
     vim.lsp.config("clangd", {
         cmd = { "clangd", "--log=error" },

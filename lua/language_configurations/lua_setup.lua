@@ -1,6 +1,10 @@
 local lua_setup = {}
 
 lua_setup.LSPSetup = function()
+    if vim.fn.executable "lua-language-server" == 0 then
+        return
+    end
+
     vim.lsp.enable "lua_ls"
 
     vim.lsp.config("lua_ls", {
