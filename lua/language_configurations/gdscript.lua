@@ -12,31 +12,16 @@ gdscript_setup.LSPSetup = function()
 end
 
 -- Starts the godot server listener
-gdscript_setup.createServerPassCommands = function()
-    vim.api.nvim_create_user_command("Godot", function(opts)
-        if opts.args == "start" then
-            vim.fn.serverstart "127.0.0.1:6004"
-            print "Listen Server For Pass Commands Started"
-        elseif opts.args == "stop" then
-            vim.fn.serverstop "127.0.0.1:6004"
-            print "Listen Server Stopped"
-        else
-            print "Please enter valid command"
-        end
-    end, { nargs = 1 })
+gdscript_setup.startListenServerForFileJumps = function()
+    local serverList = vim.fn.serverlist()
 
-    vim.api.nvim_create_user_command("GodotPassCMD", function(opts)
-        local opt2Num = tonumber(opts.fargs[2]) + 1
-        local opt3Num = tonumber(opts.fargs[3])
-        if vim.fn.has "win32" == 0 then
-            local wslpath = vim.fn.system("wslpath " .. opts.fargs[1])
-            vim.cmd.n(wslpath)
-            vim.api.nvim_win_set_cursor(0, { opt2Num, opt3Num })
-        else
-            vim.cmd.n(opts.fargs[1])
-            vim.api.nvim_win_set_cursor(0, { opt2Num, opt3Num })
+    for _, server in ipairs(serverList) do
+        if server == "127.0.0.1:6004" then
+            return
         end
-    end, { nargs = "*" })
+    end
+
+    vim.fn.serverstart "127.0.0.1:6004"
 end
 
 --Dap Setup
