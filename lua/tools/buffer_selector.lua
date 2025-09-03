@@ -1,3 +1,4 @@
+local M = {}
 local general = require "tools.general_functions"
 
 BufferList = {}
@@ -229,8 +230,12 @@ local function create_buffer_menu()
     setUIBufferUIKeymaps(contextBuffer)
 end
 
-vim.keymap.set("n", "<leader>j", function()
-    populateBufferList()
-    deleteDeadBuffers()
-    create_buffer_menu()
-end, { noremap = true, desc = "Buffer Menu" })
+M.setupBufferSelector = function()
+    vim.keymap.set("n", "<leader>j", function()
+        populateBufferList()
+        deleteDeadBuffers()
+        create_buffer_menu()
+    end, { noremap = true, desc = "Buffer Menu" })
+end
+
+return M

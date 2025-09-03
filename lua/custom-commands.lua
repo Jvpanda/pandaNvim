@@ -5,13 +5,14 @@ local python_setup = require "language_configurations.python"
 local lua_setup = require "language_configurations.lua_setup"
 local go_setup = require "language_configurations.go"
 local lspKeybindsAndHighlighing = require "language_configurations.lsp-keybindsAndHighlighting"
+local buffer_selector = require "tools.buffer_selector"
 
-require "tools.buffer_selector"
+--[[Tools]]
+buffer_selector.setupBufferSelector()
 
 --[[My Commands]]
-gdscipt_setup.createServerPassCommands()
 
---[[Enable and Configure LSP's]]
+--[[Configure LSP's]]
 lspKeybindsAndHighlighing.LSPKeybindsSetup()
 lspKeybindsAndHighlighing.LSPHighlightSetup()
 go_setup.LSPSetup()
@@ -50,18 +51,16 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 })
 
 -- Decide which keybinds to use when entering buf
-local serverRunning = false
 vim.api.nvim_create_autocmd("BufEnter", {
-    desc = "Runs listening server when opening a .gd",
+    desc = "Runs the necessary keybinds when entering a buffer",
     group = myAutogroup,
     pattern = "*",
     callback = function()
         local filetype = vim.bo.filetype
         if filetype == "cpp" or filetype == "h" then
             cpp_setup.setupKeybinds()
-        elseif serverRunning == false and filetype == "gdscript" then
-            vim.cmd.Godot "start"
-            serverRunning = true
+        elseif filetype == "gdscript" then
+            gdscipt_setup.startListenServerForFileJumps()
         end
     end,
 })
