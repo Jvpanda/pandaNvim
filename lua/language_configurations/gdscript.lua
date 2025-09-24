@@ -24,25 +24,4 @@ gdscript_setup.startListenServerForFileJumps = function()
     vim.fn.serverstart "127.0.0.1:6004"
 end
 
---Dap Setup
-gdscript_setup.dapSetup = function()
-    local dap = require "dap"
-    dap.adapters.godot = {
-        type = "server",
-        host = "127.0.0.1",
-        port = 6006,
-    }
-
-    dap.configurations.gdscript = {
-        {
-            type = "godot",
-            request = "launch", -- could be launch or attack
-            name = "Launch Main Scene",
-            --specific to gdscript
-            --project = '${workspaceFolder}', dont need this
-            launch_scene = true,
-        },
-    }
-end
-
 return gdscript_setup

@@ -22,10 +22,6 @@ gdscipt_setup.LSPSetup()
 python_setup.LSPSetup()
 lua_setup.LSPSetup()
 
---[[Enable Dap Protocols]]
-gdscipt_setup.dapSetup()
-cpp_setup.dapSetup()
-
 -- [[ Basic Autocommands ]]
 local myAutogroup = vim.api.nvim_create_augroup("customAutogroup", { clear = true })
 
