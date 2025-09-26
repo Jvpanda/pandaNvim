@@ -179,7 +179,7 @@ local function addFileToCmakeTxt()
         end
     end
 
-    local filepath = workspace.workspaceRelativePath()
+    local filepath = workspace.relativeWorspacePath()
 
     local newLines = string.sub(fileTable[sourceLine], 1, -3)
     newLines = newLines .. "\n    " .. filepath .. vim.fn.expand "%:t"

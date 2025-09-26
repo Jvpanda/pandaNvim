@@ -1,29 +1,6 @@
 local workspace_tracker = {}
 local workspaceDirectory = "unset"
-
-workspace_tracker.getWorkspace = function()
-    return workspaceDirectory
-end
-
-function workspace_tracker.workspaceRelativePath()
-    if workspace_tracker.isWorkspaceSet() == false then
-        print "Please set a workspace"
-        return
-    end
-    local tempDir = vim.fn.expand "%:p:h" .. "/"
-    local relativeDirPath = ""
-    local safetyVar = 0
-    while vim.fn.isdirectory(tempDir .. "src/") == 0 and tempDir ~= vim.fn.expand "~\\" and safetyVar < 30 do
-        relativeDirPath = vim.fn.fnamemodify(tempDir, ":h:t") .. "/" .. relativeDirPath
-        tempDir = vim.fn.fnamemodify(tempDir, ":p:h:h") .. "/"
-        safetyVar = safetyVar + 1
-    end
-    if tempDir == vim.fn.expand "~/" or safetyVar == 30 then
-        print "Home could not be set"
-        return "unset"
-    end
-    return relativeDirPath
-end
+local markers = { cpp = { files = {}, folders = { "src", "git" } }, gdscript = { files = { "project.godot" }, folders = {} } }
 
 workspace_tracker.isWorkspaceSet = function()
     if workspaceDirectory == "unset" then
@@ -33,38 +10,91 @@ workspace_tracker.isWorkspaceSet = function()
     end
 end
 
-local function findWorkspace()
-    local tempDir = vim.fn.expand "%:p:h" .. "\\"
-    local safetyVar = 0
-    while vim.fn.isdirectory(tempDir .. "src\\") == 0 and tempDir ~= vim.fn.expand "~\\" and safetyVar < 30 do
-        tempDir = vim.fn.fnamemodify(tempDir, ":p:h:h") .. "\\"
-        safetyVar = safetyVar + 1
-    end
-    if tempDir == vim.fn.expand "~\\" or safetyVar == 30 then
-        print "Home could not be set"
-        return "unset"
-    end
-    return tempDir
+workspace_tracker.getWorkspace = function()
+    return workspaceDirectory
 end
 
-vim.keymap.set("n", "<F8>", function()
-    if workspace_tracker.isWorkspaceSet() == false then
-        workspaceDirectory = findWorkspace()
-        print("Home set to " .. workspaceDirectory)
-    elseif workspace_tracker.isWorkspaceSet() == true then
+function workspace_tracker.relativeWorspacePath()
+    local currentPath = vim.fn.expand "%:p:h"
+    currentPath = currentPath:gsub(workspaceDirectory:sub(1, -2), "")
+    currentPath = currentPath:gsub("\\", "/")
+    currentPath = currentPath .. "/"
+    return currentPath
+end
+
+---@param files table Table of the names of the files to be searched for
+---@return string workspaceDirectory
+local function findWorkspaceByReadableFile(files)
+    local currentDir = vim.fn.expand "%:p:h" .. "/"
+    local safety = 0
+
+    while currentDir ~= vim.fn.expand "~/" and safety < 30 do
+        print(currentDir)
+        for _, searchFile in pairs(files) do
+            if vim.fn.filereadable(currentDir .. searchFile) == 1 then
+                return currentDir
+            end
+        end
+        currentDir = vim.fn.fnamemodify(currentDir, ":p:h:h") .. "/"
+        safety = safety + 1
+    end
+
+    return "unset"
+end
+
+---@param directory table Table of the names of the directory's to be searched for
+---@return string workspaceDirectory
+local function findWorkspaceByDirectory(directory)
+    local currentDir = vim.fn.expand "%:p:h" .. "/"
+    local safety = 0
+
+    while currentDir ~= vim.fn.expand "~/" and safety < 30 do
+        print(currentDir)
+        for _, searchDirectory in pairs(directory) do
+            if vim.fn.isdirectory(currentDir .. searchDirectory) == 1 then
+                return currentDir
+            end
+        end
+        currentDir = vim.fn.fnamemodify(currentDir, ":p:h:h") .. "/"
+        safety = safety + 1
+    end
+
+    return "unset"
+end
+
+---@param fileMarkers? table Table of the names of the directory's to be searched for
+---@param folderMarkers? table Table of the names of the directory's to be searched for
+workspace_tracker.setWorkspace = function(fileMarkers, folderMarkers)
+    if workspace_tracker.isWorkspaceSet() == true then
         local input = vim.fn.input {
             default = "n",
             cancel_return = "abort",
             prompt = "Current Workspace: " .. workspace_tracker.getWorkspace() .. " Set New Workspace?(Y/n)",
         }
-        if input == "Y" or input == "y" then
-            workspaceDirectory = findWorkspace()
-            print("Home set to " .. workspaceDirectory)
-        else
+        if input == "n" or input == "N" then
             print "Home not set"
+            return
         end
     end
-    vim.cmd.cd(workspaceDirectory)
+
+    if fileMarkers ~= {} or fileMarkers ~= nil then
+        workspaceDirectory = findWorkspaceByReadableFile(fileMarkers)
+    end
+    if workspace_tracker.isWorkspaceSet() == false and (folderMarkers ~= {} or folderMarkers ~= nil) then
+        workspaceDirectory = findWorkspaceByDirectory(folderMarkers)
+    end
+
+    if workspace_tracker.isWorkspaceSet() == true then
+        print("Home set to " .. workspaceDirectory)
+        vim.cmd.cd(workspaceDirectory)
+    else
+        print "Home could not be set"
+    end
+end
+
+vim.keymap.set("n", "<F8>", function()
+    local ft = vim.bo.ft
+    workspace_tracker.setWorkspace(markers[ft].files, markers[ft].folders)
 end)
 
 return workspace_tracker
