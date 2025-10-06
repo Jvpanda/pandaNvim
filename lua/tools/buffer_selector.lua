@@ -55,13 +55,11 @@ local enqueueRecentBufferList = function(bufferId)
         return
     end
 
-    print("REMOVING: " .. bufferId)
     table.insert(RecentBuffers, bufferId, BufferList[bufferId])
     RecentBuffers[bufferId].recency = 0
     BufferList[bufferId] = nil
 
     for key_index in pairs(RecentBuffers) do
-        print(key_index)
         RecentBuffers[key_index].recency = RecentBuffers[key_index].recency + 1
 
         if RecentBuffers[key_index].recency >= 4 then
@@ -108,11 +106,20 @@ local isDividerLine = function(line)
     end
 end
 
-local function setUIBufferUIKeymaps(contextBuffer)
-    vim.keymap.set("n", "<Esc>", function()
-        general.deleteCurrentWindow()
-    end, { buffer = true })
+local selectBuffer = function(line)
+    if isDividerLine(line) then
+        return
+    end
 
+    local firstSpace = line:find " "
+    local num = line:sub(1, firstSpace - 1)
+    local bufferId = tonumber(num) + 0
+
+    enqueueRecentBufferList(bufferId)
+    vim.api.nvim_set_current_buf(bufferId)
+end
+
+local function setUIBufferUIKeymaps(contextBuffer)
     vim.keymap.set("n", "D", function()
         local line = vim.fn.getline "."
         if isDividerLine(line) then
@@ -154,20 +161,6 @@ local function setUIBufferUIKeymaps(contextBuffer)
         local rootFolder = vim.fn.fnamemodify(path, ":h:t")
         local tail = vim.fn.fnamemodify(path, ":t")
         vim.api.nvim_set_current_line(rootFolder .. "/" .. tail)
-    end, { buffer = true })
-
-    vim.keymap.set("n", "<CR>", function()
-        local line = vim.fn.getline "."
-        if isDividerLine(line) then
-            return
-        end
-
-        local bufferId = getBufferIdUnderCursor()
-
-        enqueueRecentBufferList(bufferId)
-
-        general.deleteCurrentWindow()
-        vim.api.nvim_set_current_buf(bufferId)
     end, { buffer = true })
 end
 
@@ -223,7 +216,7 @@ local function create_buffer_menu()
         end
     end
 
-    general.customOptionMenu(menuTable, { charCountWidth = winWidth + 3, lineHeight = #menuTable + 3 })
+    general.customOptionsMenu(menuTable, { columnCharCount = winWidth + 4, rowCount = #menuTable + 3 }, selectBuffer)
 
     vim.fn.cursor(1, 1)
 

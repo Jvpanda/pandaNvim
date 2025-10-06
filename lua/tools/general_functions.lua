@@ -9,15 +9,15 @@ function funcs.create_floating_window(opts)
     -- default is a window that takes up half the screen
     -- calculates the ratio first then adds the line and char counts to the end result
     -- This acts as having an offset by adding onto it or it can even subtract
-    local width = math.floor((vim.o.columns * (opts.width or 0.5)) + (opts.charCountWidth or 0))
-    local height = math.floor((vim.o.lines * (opts.height or 0.5)) + (opts.lineHeight or 0))
+    local width = math.floor((vim.o.columns * (opts.widthRatio or 0.5)) + (opts.columnCharCount or 0))
+    local height = math.floor((vim.o.lines * (opts.heightRatio or 0.5)) + (opts.rowCount or 0))
 
     -- If there is no height or width then it assumes line count and char counts only
-    if opts.lineHeight and not opts.height then
-        height = opts.lineHeight
+    if opts.rowCount and not opts.heightRatio then
+        height = opts.rowCount
     end
-    if opts.charCountWidth and not opts.width then
-        width = opts.charCountWidth
+    if opts.columnCharCount and not opts.widthRatio then
+        width = opts.columnCharCount
     end
 
     -- Col and row determine the positioning.
@@ -71,7 +71,8 @@ function funcs.setDelWinKeymapForBuffer()
 end
 
 --Custom Option Selector
-funcs.customOptionMenu = function(printedOptions, windowOpts)
+funcs.customOptionsMenu = function(printedOptions, windowOpts, callbackFunction, callbackFunctionData)
+    callbackFunction = callbackFunction or nil
     printedOptions = printedOptions or {}
     windowOpts = windowOpts or {}
 
@@ -97,6 +98,19 @@ funcs.customOptionMenu = function(printedOptions, windowOpts)
         else
             vim.api.nvim_win_set_cursor(0, { coords[1] - 1, coords[2] })
         end
+    end, { buffer = true })
+    if callbackFunction ~= nil then
+        vim.keymap.set("n", "<CR>", function()
+            local line = vim.fn.getline "."
+            funcs.deleteCurrentWindow(false)
+            if callbackFunction then
+                callbackFunction(line, callbackFunctionData)
+            end
+        end, { buffer = true })
+    end
+
+    vim.keymap.set("n", "<Esc>", function()
+        funcs.deleteCurrentWindow()
     end, { buffer = true })
 end
 
