@@ -1,17 +1,16 @@
 local cpp_setup = {}
 local general = require "tools.general_functions"
 local workspace = require "tools.workspace_tracker"
+local raddbg = require "language_configurations.raddbg"
 local cpp_opts = {
     buildType = "Release",
     runWindow = "floatingWindow",
-    vimFloatingWindowSize = { height = 0.45, width = 0.25, col = 1, row = 0 },
+    vimFloatingWindowSize = { heightRatio = 0.45, widthRatio = 0.25, col = 1, row = 0 },
+    debugRunStart = "run",
     compileFlags = "", --need to implement
     buildFlags = "", --need to implement
     workspaceModifier = "", --need to implement
 }
-
-cpp_opts.vimFloatingWindowSize = { height = 0.45, width = 0.25, col = 1, row = 0 }
-cpp_opts.runWindow = "floatingWindow"
 
 --[[LSP Setttings]]
 
@@ -62,7 +61,6 @@ end
 
 ---@class ClangdInitializeResult: lsp.InitializeResult
 ---@field offsetEncoding? string
-
 cpp_setup.LSPSetup = function()
     if vim.fn.executable "clangd" == 0 then
         return
@@ -179,7 +177,7 @@ local function addFileToCmakeTxt()
         end
     end
 
-    local filepath = workspace.relativeWorspacePath()
+    local filepath = workspace.relativeWorkspacePath()
 
     local newLines = string.sub(fileTable[sourceLine], 1, -3)
     newLines = newLines .. "\n    " .. filepath .. vim.fn.expand "%:t"
@@ -216,63 +214,83 @@ local function runCPPWindows()
         return
     end
 
+    local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
+
+    if cpp_opts.buildType == "Debug" then
+        raddbg.runRadDbg(filepath, { run = cpp_opts.debugRunStart })
+        return
+    end
+
     local oldCommandHeight = vim.o.cmdheight
     vim.o.cmdheight = 15
 
     if cpp_opts.runWindow == "floatingWindow" then
         general.create_floating_window(cpp_opts.vimFloatingWindowSize)
-        local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
         vim.cmd.terminal(filepath)
         general.setDelWinKeymapForBuffer()
     elseif cpp_opts.runWindow == "window" then
-        local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
         vim.cmd "vsplit"
         vim.cmd.terminal(filepath)
         general.setDelWinKeymapForBuffer()
     elseif cpp_opts.runWindow == "external" then
-        local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
         vim.cmd("!start " .. filepath)
     elseif cpp_opts.runWindow == "external_permanent" then
-        local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
         vim.cmd("!start cmd /k " .. filepath)
     end
 
     vim.o.cmdheight = oldCommandHeight
 end
 
---[[Keymaps]]
-local function setupCppOptsKeybinds()
-    vim.keymap.set("n", "<leader><F12>", "", { desc = "Compiler Settings" })
+-- [[ CUSTOM MENU CALLBACKS ]]
+local customMenuCallbacks = {}
 
-    vim.keymap.set("n", "<leader><F12>d", function()
-        if cpp_opts.buildType == "Release" then
-            cpp_opts.buildType = "Debug"
-            print "Set To Debug"
-        else
-            cpp_opts.buildType = "Release"
-            print "Set To Release"
-        end
-    end, { desc = "Set to Release or Debug." })
-
-    vim.keymap.set("n", "<leader><F12>a", function()
+local function handle_main_menu(option)
+    customMenuCallbacks[option]()
+end
+local function handle_window_type_menu(windowType)
+    print("Switched To " .. windowType)
+    cpp_opts.runWindow = windowType
+end
+local handle_cmake_menu = function(option)
+    if option == "Add File To Source" then
         addFileToCmakeTxt()
-    end, { desc = "Adds current h and cpp to cmakelists" })
-
-    vim.keymap.set("n", "<leader><F12>r", function()
-        if workspace.isWorkspaceSet() then
-            general.customOptionMenu({ "external", "external_permanent", "floatingWindow", "window" }, { lineHeight = 4, width = 0.1 })
-            vim.keymap.set("n", "<CR>", function()
-                cpp_opts.runWindow = vim.fn.getline "."
-                general.deleteCurrentWindow()
-            end, { buffer = true })
-        else
-            print "Please set a valid home"
-        end
-    end, { desc = "Chooses which terminal the program will run on" })
+    end
+end
+local handle_debug_run_menu = function(option)
+    cpp_opts.debugRunStart = option
+    print("Switched to " .. option)
 end
 
+customMenuCallbacks["Release Run Options"] = function()
+    general.customOptionsMenu({ "external", "external_permanent", "floatingWindow", "window" }, { rowCount = 4, widthRatio = 0.1 }, handle_window_type_menu)
+end
+
+customMenuCallbacks["Switch To Release"] = function()
+    print "Switched To Release"
+    cpp_opts.buildType = "Release"
+end
+
+customMenuCallbacks["Switch To Debug"] = function()
+    print "Switched To Debug"
+    cpp_opts.buildType = "Debug"
+end
+customMenuCallbacks["Debug Run Options"] = function()
+    general.customOptionsMenu({ "Run", "Step Into" }, { rowCount = 4, widthRatio = 0.1 }, handle_debug_run_menu)
+end
+
+customMenuCallbacks["Cmake"] = function()
+    general.customOptionsMenu({ "Add file To Source" }, { rowCount = 4, widthRatio = 0.1 }, handle_cmake_menu)
+end
+
+-- [[ KEYBINDS ]]
 function cpp_setup.setupKeybinds()
-    setupCppOptsKeybinds()
+    vim.keymap.set("n", "<F9>", function()
+        if cpp_opts.buildType == "Debug" then
+            general.customOptionsMenu({ "Switch To Release", "Debug Run Options", "Cmake" }, { rowCount = 4, widthRatio = 0.2 }, handle_main_menu)
+        else
+            general.customOptionsMenu({ "Switch To Debug", "Release Run Options", "Cmake", "" }, { rowCount = 4, widthRatio = 0.2 }, handle_main_menu)
+        end
+    end, { buffer = true })
 
     vim.keymap.set("n", "<F10>", function()
         createCmakeBuildFolder()
@@ -307,5 +325,6 @@ function cpp_setup.setupKeybinds()
         runCPPWindows()
     end, {})
 end
+cpp_setup.setupKeybinds()
 
 return cpp_setup
