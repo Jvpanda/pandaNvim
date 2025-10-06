@@ -1,3 +1,7 @@
+local customInstalls = require "tools.install_script"
+
+customInstalls.setupMyInstallations()
+
 -- NOTE: "plugin-setup" means there's more than one plugin being setup in the file
 vim.cmd.colorscheme "My_Scheme"
 -- [[Setting Options]]
