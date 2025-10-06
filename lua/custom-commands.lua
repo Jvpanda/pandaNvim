@@ -1,6 +1,6 @@
 local arduino_setup = require "language_configurations.arduino"
 local cpp_setup = require "language_configurations.cpp"
-local gdscipt_setup = require "language_configurations.gdscript"
+local gdscript_setup = require "language_configurations.gdscript"
 local python_setup = require "language_configurations.python"
 local lua_setup = require "language_configurations.lua_setup"
 local go_setup = require "language_configurations.go"
@@ -18,7 +18,7 @@ lspKeybindsAndHighlighing.LSPHighlightSetup()
 go_setup.LSPSetup()
 cpp_setup.LSPSetup()
 arduino_setup.LSPSetup()
-gdscipt_setup.LSPSetup()
+gdscript_setup.LSPSetup()
 python_setup.LSPSetup()
 lua_setup.LSPSetup()
 
@@ -56,7 +56,8 @@ vim.api.nvim_create_autocmd("BufEnter", {
         if filetype == "cpp" or filetype == "h" then
             cpp_setup.setupKeybinds()
         elseif filetype == "gdscript" then
-            gdscipt_setup.startListenServerForFileJumps()
+            gdscript_setup.setupKeybinds()
+            gdscript_setup.startListenServerForFileJumps()
         end
     end,
 })

@@ -23,7 +23,7 @@ local checkCCompiler = function()
     if valid then
         vim.health.ok(string.format("Found executable: '%s'", compiler))
     else
-        vim.health.error "No C Compiler found, treesitter and telescope fzf native will not work"
+        vim.health.error "No C Compiler found, treesitter and telescope fzf native will not work if not already compiled"
     end
 end
 

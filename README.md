@@ -20,26 +20,34 @@ Optional Requirements:
 
 #
 ### Existing Language Configuration Support
-- This only supports the given lsps and debuggers
+- This only supports the given lsps
+- Do note that most of these can be downloaded and set to the local neovim environment with :PandaInstall package name
+- Then just restart neovim
 
     <details><summary> Arduino </summary>
         <ul>
         <li> Download arduino CLI and Language Server </li>
         <li>Ensure they are on PATH </li>
+        <li>To finish this installation, you need to install boards and packages necessary
+            <br>Also note that the environment variable is set only within neovim
+            <br>Commands to set up the initial environment:
+            <br>arduino-cli config init
+            <br>arduino-cli core update-index
+            <br>arduino-cli core install arduino:avr:uno/Or any other
+            <br>arduino-cli lib install "Library Name"</li>
         </ul>
     </details>
 
     <details><summary> CPP </summary>
         <ul>
-        <li> Download Cmake, CLANG_LLVM, and MSVC </li>
-        <li> For LLDB to function a python 310 dll and other dependencies must be placed in the bin of clang </li>
+        <li> Download Cmake, clangd, raddbg, and MSVC </li>
         <li> Ensure they are on PATH </li>
         </ul>
     </details>
 
     <details><summary> Gdscript </summary>
         <ul>
-        <li> Godot must be open to use</li>
+        <li> Godot must be open to use lsp</li>
         <li> Set "Use External Editor" to "On" and turn on advanced properties</li>
         <li> Set "Exec Path" to nvim</li>
         <li> Set "Exec Flags" to --server 127.0.0.1:6004 --remote-send "&ltC-\&gt&ltC-N&gt:n {file}&ltCR&gt{line}G{col}|"</li>
@@ -62,7 +70,7 @@ Optional Requirements:
 
     <details><summary> Python </summary>
         <ul>
-        <li> Download pyright and debugpy </li>
+        <li> Download pyright </li>
         <li> Note that pyright uses node js as a dependency </li>
         <li> Ideally this would be done a py environment with the PATH variable pointing to the scripts executables </li>
         </ul>
