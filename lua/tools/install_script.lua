@@ -1,5 +1,3 @@
-local M = {}
-
 local baseInstallDir = vim.fn.expand "~" .. "/AppData/Local/nvim-data/myInstallations/"
 local Pkgs = {
     ripgrep = {
@@ -150,9 +148,9 @@ end, {
     end,
 })
 
-M.setupMyInstallations = function()
+local setupMyInstallations = function()
     createInstallDir()
     checkEnvironment()
 end
 
-return M
+setupMyInstallations()

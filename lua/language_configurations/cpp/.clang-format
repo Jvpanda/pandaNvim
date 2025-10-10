@@ -1,0 +1,11 @@
+UseTab: Never
+IndentWidth: 4
+
+Language: Cpp
+AlignConsecutiveAssignments:
+  Enabled: true
+AccessModifierOffset: 0
+IndentAccessModifiers: true
+IndentCaseBlocks: true
+IndentCaseLabels: true
+
