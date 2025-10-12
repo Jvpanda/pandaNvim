@@ -14,6 +14,10 @@ workspace_tracker.getWorkspace = function()
     return workspaceDirectory
 end
 
+workspace_tracker.getWindowsWorkspace = function()
+    return workspaceDirectory:gsub("/", "\\")
+end
+
 function workspace_tracker.relativeWorkspacePath()
     local currentPath = vim.fn.expand "%:p:h"
     currentPath = currentPath:gsub(workspaceDirectory:sub(1, -2), "")
@@ -70,7 +74,7 @@ workspace_tracker.setWorkspace = function(fileMarkers, folderMarkers)
             cancel_return = "abort",
             prompt = "Current Workspace: " .. workspace_tracker.getWorkspace() .. " Set New Workspace?(Y/n)",
         }
-        if input == "n" or input == "N" then
+        if input == "n" or input == "N" or "abort" then
             print "Home not set"
             return
         end
