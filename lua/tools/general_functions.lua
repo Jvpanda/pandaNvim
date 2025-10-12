@@ -1,5 +1,13 @@
 local funcs = {}
 
+funcs.isOnWindows = function()
+    if vim.fn.has "Win32" == 0 then
+        return false
+    else
+        return true
+    end
+end
+
 function funcs.create_floating_window(opts)
     opts = opts or {}
 
