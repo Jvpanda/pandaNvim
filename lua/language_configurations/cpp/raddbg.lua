@@ -1,3 +1,4 @@
+local Api = {}
 local general = require "tools.general_functions"
 local breakpoint_list = {}
 local raddbgJobId = nil
@@ -52,8 +53,8 @@ local function handle_main_menu(option, bufData)
     end
 end
 
--- [[ KEYMAP FUNCTIONS ]]
-local function get_breakpoints_from_raddbg()
+-- [[ EXPOSED KEYMAP FUNCTIONS ]]
+Api.get_breakpoints_from_raddbg = function()
     local r = vim.fn.system "raddbg --ipc list_breakpoints"
     local search = 0
     local list_number = 1
@@ -83,7 +84,7 @@ local function get_breakpoints_from_raddbg()
     end
 end
 
-local function set_breakpoint_signs_from_raddbg()
+Api.set_breakpoint_signs_from_raddbg = function()
     breakpoint_list = {}
     get_breakpoints_from_raddbg()
     vim.fn.sign_unplace "PandaBreakpointGroup"
@@ -98,7 +99,7 @@ local function set_breakpoint_signs_from_raddbg()
     end
 end
 
-local function add_or_remove_breakpoint()
+Api.add_or_remove_breakpoint = function()
     local bufData = get_buf_data()
     local signData = vim.fn.sign_getplaced(bufData.number, { lnum = bufData.row, group = "PandaBreakpointGroup" })
     if signData[1].signs[1] == nil then
@@ -110,7 +111,7 @@ local function add_or_remove_breakpoint()
     end
 end
 
-local function toggle_breakpoint()
+Api.toggle_breakpoint = function()
     local bufData = get_buf_data()
     local signData = vim.fn.sign_getplaced(bufData.number, { lnum = bufData.row, group = "PandaBreakpointGroup" })
     if signData[1].signs[1] == nil then
@@ -127,7 +128,7 @@ local function toggle_breakpoint()
     end
 end
 
-local function toggle_watch_expr()
+Api.toggle_watch_expr = function()
     local bufData = get_buf_data()
     local word = vim.fn.expand "<cword>"
     local line = vim.api.nvim_get_current_line()
@@ -147,49 +148,13 @@ local function toggle_watch_expr()
     vim.fn.system { "raddbg", "--ipc", "toggle_watch_expr", word }
 end
 
-local function set_keymaps()
-    vim.keymap.set("n", "<leader>bw", toggle_watch_expr, { desc = "debug" })
-    vim.keymap.set("n", "<F8>", function()
-        local bufData = get_buf_data()
-        general.customOptionsMenu({ "Kill Instance", "Halt", "Run To Line" }, { rowCount = 5, widthRatio = 0.2 }, handle_main_menu, bufData)
-    end, {})
-    vim.keymap.set("n", "<F7>", function()
-        vim.fn.system { "raddbg", "--ipc", "step_out" }
-    end, {})
-    vim.keymap.set("n", "<F6>", function()
-        vim.fn.system { "raddbg", "--ipc", "step_into" }
-    end, {})
-    vim.keymap.set("n", "<F5>", function()
-        vim.fn.system { "raddbg", "--ipc", "step_over" }
-    end, {})
-    vim.keymap.set("n", "<leader>bb", add_or_remove_breakpoint, { desc = "Add or Remove Breakpoint" })
-
-    vim.keymap.set("n", "<leader>bd", toggle_breakpoint, { desc = "Toggle Breakpoint" })
-
-    vim.keymap.set("n", "<leader>bf", set_breakpoint_signs_from_raddbg, { desc = "Reset Breakpoints" })
-
-    vim.keymap.set("n", "<leader>ba", toggle_watch_expr, { desc = "Toggle a watch expression" })
-
-    vim.keymap.set("n", "<leader>by", function()
-        local currentBuf = vim.api.nvim_get_current_buf()
-        local currentLN = vim.api.nvim_win_get_cursor(0)
-        local signData = vim.fn.sign_getplaced(currentBuf, { lnum = currentLN[1], group = "PandaBreakpointGroup" })
-        P(signData)
-
-        -- if vim.fn.jobwait({ raddbgJobId }, 0)[1] == -1 then
-        --     print "Process is still running"
-        -- else
-        --     print "Process has exited"
-        -- end
-    end, { desc = "Job debug" })
+Api.debug_menu = function()
+    local bufData = get_buf_data()
+    general.customOptionsMenu({ "Kill Instance", "Halt", "Run To Line" }, { rowCount = 5, widthRatio = 0.2 }, handle_main_menu, bufData)
 end
 
-set_visual_breakpoint_attributes()
-set_keymaps()
-
--- [[ Exposed Functions ]]
-local Api = {}
 Api.runRadDbg = function(file_path, opts)
+    set_visual_breakpoint_attributes()
     if raddbgJobId == nil then
         print(file_path)
         raddbgJobId = vim.fn.jobstart("raddbg " .. file_path, {

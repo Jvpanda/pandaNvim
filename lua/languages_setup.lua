@@ -28,7 +28,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
     callback = function()
         local filetype = vim.bo.filetype
         if filetype == "cpp" or filetype == "h" then
-            cpp_keybinds.setupKeybinds()
+            cpp_keybinds.setup_keybinds()
         elseif filetype == "gdscript" then
             gdscript_setup.setupKeybinds()
             gdscript_setup.startListenServerForFileJumps()

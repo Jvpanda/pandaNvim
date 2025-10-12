@@ -1,5 +1,5 @@
 local cpp_opts = {
-    buildType = "Release",
+    buildType = "Debug",
     runWindow = "floatingWindow",
     vimFloatingWindowSize = { heightRatio = 0.45, widthRatio = 0.25, col = 1, row = 0 },
     debugRunStart = "run",

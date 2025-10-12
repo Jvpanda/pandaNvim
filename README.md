@@ -21,7 +21,7 @@ Optional Requirements:
 #
 ### Existing Language Configuration Support
 - This only supports the given lsps
-- Do note that most of these can be downloaded and set to the local neovim environment with :PandaInstall package name
+- Do note that most of these can be downloaded and set to the local neovim environment with :PandaInstall package name. Then restart.
 - Then just restart neovim
 
     <details><summary> Arduino </summary>
@@ -40,7 +40,8 @@ Optional Requirements:
 
     <details><summary> CPP </summary>
         <ul>
-        <li> Download Cmake, clangd, raddbg, and MSVC </li>
+        <li> Note that you must be in developer mode for the symlinks to work on windows</li>
+        <li> Download Cmake, clangd, raddbg, Ninja, and a compiler of your choice </li>
         <li> Ensure they are on PATH </li>
         </ul>
     </details>

@@ -1,99 +1,42 @@
 local cpp_keybinds = {}
-local general = require "tools.general_functions"
-local workspace = require "tools.workspace_tracker"
-local raddbg = require "language_configurations.cpp.raddbg"
 local menu = require "language_configurations.cpp.cpp_menus"
-local cmake = require "language_configurations.cpp.cmake_setup"
-local cpp_opts = require "language_configurations.cpp.cpp_opts"
-
---Compiling and running
-local function compileCPPWindows()
-    if workspace.isWorkspaceSet() == false then
-        return "Please set a home directory"
-    end
-
-    vim.cmd.wa()
-    print("Compiling... with build flags " .. cpp_opts.buildType)
-    local filepath = workspace.getWorkspace() .. "build/"
-    local result = vim.fn.system { "cmake", "--build", filepath, "--config " .. cpp_opts.buildType }
-    return result
-end
-
-local function runCPPWindows()
-    if workspace.isWorkspaceSet() == false then
-        vim.notify "Please set a home directory"
-        return
-    end
-
-    local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
-
-    if cpp_opts.buildType == "Debug" then
-        raddbg.runRadDbg(filepath, { run = cpp_opts.debugRunStart })
-        return
-    end
-
-    local oldCommandHeight = vim.o.cmdheight
-    vim.o.cmdheight = 15
-
-    if cpp_opts.runWindow == "floatingWindow" then
-        general.create_floating_window(cpp_opts.vimFloatingWindowSize)
-        vim.cmd.terminal(filepath)
-        general.setDelWinKeymapForBuffer()
-    elseif cpp_opts.runWindow == "window" then
-        vim.cmd "vsplit"
-        vim.cmd.terminal(filepath)
-        general.setDelWinKeymapForBuffer()
-    elseif cpp_opts.runWindow == "external" then
-        vim.cmd("!start " .. filepath)
-    elseif cpp_opts.runWindow == "external_permanent" then
-        vim.cmd("!start cmd /k " .. filepath)
-    end
-
-    vim.o.cmdheight = oldCommandHeight
-end
+local build = require "language_configurations.cpp.cpp_build_and_run"
+local debug = require "language_configurations.cpp.raddbg"
 
 -- [[ KEYBINDS ]]
-function cpp_keybinds.setupKeybinds()
-    vim.keymap.set("n", "<F9>", function()
-        if cpp_opts.buildType == "Debug" then
-            general.customOptionsMenu({ "Switch To Release", "Debug Run Options", "Cmake" }, { rowCount = 4, widthRatio = 0.2 }, menu.handle_main_menu)
-        else
-            general.customOptionsMenu({ "Switch To Debug", "Release Run Options", "Cmake", "" }, { rowCount = 4, widthRatio = 0.2 }, menu.handle_main_menu)
-        end
-    end, { buffer = true })
+function cpp_keybinds.setup_keybinds()
+    -- [[Debug Keybinds ]]
+    vim.keymap.set("n", "<F8>", debug.debug_menu, {})
+    vim.keymap.set("n", "<F7>", function()
+        vim.fn.system { "raddbg", "--ipc", "step_out" }
+    end, {})
+    vim.keymap.set("n", "<F6>", function()
+        vim.fn.system { "raddbg", "--ipc", "step_into" }
+    end, {})
+    vim.keymap.set("n", "<F5>", function()
+        vim.fn.system { "raddbg", "--ipc", "step_over" }
+    end, {})
 
-    vim.keymap.set("n", "<F10>", function()
-        cmake.createCmakeBuildFolder()
-        cmake.createCmakeTxt()
-        cmake.cmakeBuild()
-    end)
+    vim.keymap.set("n", "<leader>ba", debug.add_or_remove_breakpoint, { desc = "[BA]dd or Remove Breakpoint" })
+
+    vim.keymap.set("n", "<leader>bt", debug.toggle_breakpoint, { desc = "[B]oggle [T]reakpoint" })
+
+    vim.keymap.set("n", "<leader>br", debug.set_breakpoint_signs_from_raddbg, { desc = "[BR]eset Breakpoints" })
+
+    vim.keymap.set("n", "<leader>bw", debug.toggle_watch_expr, { desc = "[B]oggle a [W]atch expression" })
+
+    --[[ Regular Keybinds ]]
+    vim.keymap.set("n", "<F9>", menu.call_menu)
+
+    vim.keymap.set("n", "<F10>", build.cmake_generate_ninja_files)
 
     vim.keymap.set("n", "<F11>", function()
-        local compilationResult = compileCPPWindows()
-        vim.notify(compilationResult)
+        vim.notify(build.cmake_compile())
     end)
 
-    vim.keymap.set("n", "<f12>", function()
-        local compilationResult = "-------\n" .. compileCPPWindows() .. "-------\n"
-        if
-            string.find(compilationResult, "error") == nil
-            and string.find(compilationResult, "warning") == nil
-            and compilationResult ~= "Please set a home directory"
-        then
-            local oldCommandHeight = vim.o.cmdheight
-            vim.o.cmdheight = 15
-            print(compilationResult)
-            vim.o.cmdheight = oldCommandHeight
+    vim.keymap.set("n", "<f12>", build.compile_and_run)
 
-            runCPPWindows()
-        else
-            vim.notify(compilationResult)
-        end
-    end, {})
-
-    vim.keymap.set("n", "<S-f12>", function()
-        runCPPWindows()
-    end, {})
+    vim.keymap.set("n", "<S-f12>", build.run_cpp)
 end
 
 return cpp_keybinds
