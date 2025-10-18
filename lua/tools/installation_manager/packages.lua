@@ -1,8 +1,5 @@
 local M = {}
-M.baseInstallDir = vim.fn.expand "~" .. "/AppData/Local/nvim-data/PandaInstallations/"
-if vim.fn.has "Win32" == 0 then
-    M.baseInstallDir = "$XDG_DATA_HOME/nvim/PandaInstallations/"
-end
+M.baseInstallDir = vim.fn.stdpath "data" .. "/PandaInstallations/"
 
 -- First folder in binary name doubles as a executable name
 
