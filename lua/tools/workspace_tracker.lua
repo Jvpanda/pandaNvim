@@ -1,3 +1,5 @@
+local general = require "tools.general_functions"
+
 local workspace_tracker = {}
 local workspaceDirectory = "unset"
 local markers = { cpp = { files = {}, folders = { "src", "git" } }, gdscript = { files = { "project.godot" }, folders = {} } }
@@ -20,10 +22,11 @@ end
 
 function workspace_tracker.relativeWorkspacePath()
     local currentPath = vim.fn.expand "%:p:h"
-    currentPath = currentPath:gsub(workspaceDirectory:sub(1, -2), "")
-    currentPath = currentPath:gsub("\\", "/")
+    if general.isOnWindows() then
+        currentPath = currentPath:gsub("\\", "/")
+    end
+    currentPath = currentPath:gsub(workspace_tracker.getWorkspace(), "")
     currentPath = currentPath .. "/"
-    currentPath = currentPath:sub(2, -1)
     return currentPath
 end
 
@@ -87,7 +90,9 @@ workspace_tracker.setWorkspace = function(fileMarkers, folderMarkers)
         workspaceDirectory = findWorkspaceByDirectory(folderMarkers)
     end
 
-    workspaceDirectory = workspaceDirectory:gsub("\\", "/")
+    if general.isOnWindows() then
+        workspaceDirectory = workspaceDirectory:gsub("\\", "/")
+    end
 
     if workspace_tracker.isWorkspaceSet() == true then
         print("Home set to " .. workspaceDirectory)
@@ -101,9 +106,5 @@ vim.keymap.set("n", "<F1>", function()
     local ft = vim.bo.ft
     workspace_tracker.setWorkspace(markers[ft].files, markers[ft].folders)
 end)
-
-vim.keymap.set("n", "<leader><F9>", function()
-    print(workspace_tracker.relativeWorkspacePath())
-end, { desc = "AFS" })
 
 return workspace_tracker
