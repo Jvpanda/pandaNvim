@@ -44,7 +44,7 @@ M.Pkgs = {
         repo = "EpicGamesExt/raddebugger",
         binaryDir = "raddbg/",
         windowsTags = "raddbg.zip",
-        linuxTags = "NOLINUXVERSION",
+        linuxTags = nil,
     },
     ninja = {
         repo = "ninja-build/ninja",

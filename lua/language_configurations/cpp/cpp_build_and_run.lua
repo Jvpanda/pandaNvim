@@ -66,12 +66,11 @@ M.create_or_switch_symlinks = function()
                 .. "\\compile_commands.json"
         )
     else
-        --NEEDS LINUX TEST
         if vim.fn.filereadable(workspace.getWorkspace() .. "compile_commands.json") == 1 then
             vim.fn.system("unlink " .. workspace.getWorkspace() .. "compile_commands.json")
         end
         vim.fn.system(
-            "ln -s"
+            "ln "
                 .. workspace.getWorkspace()
                 .. "build/"
                 .. cpp_opts.buildType
@@ -180,7 +179,12 @@ M.run_cpp = function()
         return
     end
 
-    local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
+    local filepath = ""
+    if general.isOnWindows() then
+        filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
+    else
+        filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary"
+    end
 
     if cpp_opts.buildType == "Debug" and cpp_opts.debugRunStart ~= "No raddbg" and general.isOnWindows() == true then
         raddbg.runRadDbg(filepath, { run = cpp_opts.debugRunStart })

@@ -10,7 +10,11 @@ end
 
 local setEnvironmentVar = function(binaryDirectory)
     if vim.fn.isdirectory(packs.baseInstallDir .. binaryDirectory) == 1 then
-        vim.env.PATH = vim.env.PATH .. ";" .. packs.baseInstallDir .. binaryDirectory
+        if general.isOnWindows() then
+            vim.env.PATH = vim.env.PATH .. ";" .. packs.baseInstallDir .. binaryDirectory
+        else
+            vim.env.PATH = vim.env.PATH .. ":" .. packs.baseInstallDir .. binaryDirectory
+        end
     end
 end
 
@@ -42,6 +46,13 @@ local function download_and_unzip(pkg)
             "-C",
             unzipDir,
         }
+    elseif general.isOnWindows() == false then
+        unzipCommand = {
+            "unzip",
+            packs.baseInstallDir .. downloadedFile,
+            "-d",
+            unzipDir,
+        }
     else
         unzipCommand = {
             "tar",
@@ -56,13 +67,14 @@ local function download_and_unzip(pkg)
 
     if general.isOnWindows() then
         if vim.fn.executable(packs.baseInstallDir .. pkg.binaryDir .. executableName) == 0 then
-            local extraInstallFile = unpack(vim.split(vim.fn.glob(unzipDir .. "/*"), "\n", { trimempty = true }))
+            local extraInstallFile = unpack(vim.split(vim.fn.glob(unzipDir .. "*"), "\n", { trimempty = true }))
             Await_System { "robocopy", extraInstallFile, unzipDir, "/E", "/MOVE" }
         end
     else
         if vim.fn.executable(packs.baseInstallDir .. pkg.binaryDir .. executableName) == 0 then
-            local extraInstallFile = unpack(vim.split(vim.fn.glob(unzipDir .. "/*"), "\n", { trimempty = true }))
-            Await_System { "mv", extraInstallFile .. "/.*", unzipDir }
+            local extraInstallFile = unpack(vim.split(vim.fn.glob(unzipDir .. "*"), "\n", { trimempty = true }))
+            os.execute("mv " .. extraInstallFile .. "/* " .. unzipDir)
+            Await_System { "rm", "-rf", extraInstallFile }
         end
     end
 
@@ -77,6 +89,11 @@ end
 
 local installPkg = function(pkg)
     local executableName = pkg.binaryDir:match "[^/]*"
+    if pkg.linuxTags == nil or pkg.windowsTags == nil then
+        print(executableName, "Not available on this system")
+        return
+    end
+
     if vim.fn.isdirectory(packs.baseInstallDir .. pkg.binaryDir) == 1 then
         print(executableName .. " is already installed!")
         return
