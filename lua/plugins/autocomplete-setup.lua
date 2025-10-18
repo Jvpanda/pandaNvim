@@ -51,8 +51,8 @@ return {
                 ["<C-b>"] = { "scroll_documentation_up", "fallback" },
                 ["<C-f>"] = { "scroll_documentation_down", "fallback" },
 
-                ["<C-k>"] = { "snippet_forward", "fallback" },
-                ["<C-j>"] = { "snippet_backward", "fallback" },
+                ["<C-l>"] = { "snippet_forward", "fallback" },
+                ["<C-h>"] = { "snippet_backward", "fallback" },
 
                 ["<C-s>"] = { "show_signature", "hide_signature", "fallback" },
 
