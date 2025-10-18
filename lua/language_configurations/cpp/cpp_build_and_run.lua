@@ -4,6 +4,21 @@ local cpp_opts = require "language_configurations.cpp.cpp_opts"
 local workspace = require "tools.workspace_tracker"
 local raddbg = require "language_configurations.cpp.raddbg"
 
+-- [[Build Environment Setup]]
+local generate_clang_format = function()
+    if vim.fn.filereadable ".clang-format" == 1 then
+        return
+    end
+
+    local fp = vim.fn.fnamemodify(vim.fn.expand "$MYVIMRC", ":h") .. "/lua/language_configurations/cpp/.clang-format"
+    if general.isOnWindows() then
+        fp = fp:gsub("/", "\\")
+        os.execute("COPY " .. fp .. " " .. workspace.getWindowsWorkspace())
+    else
+        --NEEDS LINUX TEST
+        vim.system { "cp", fp, workspace.getWorkspace() }
+    end
+end
 -- [[Cmake Setup]]
 local generate_cmake_lists = function()
     if vim.fn.filereadable "CMakeLists.txt" == 0 then
@@ -33,10 +48,13 @@ local create_cmake_build_folders = function()
 end
 
 M.create_or_switch_symlinks = function()
+    if workspace.isWorkspaceSet() == false then
+        return
+    end
     --Note vim.system is async and newer, vim.fn.system is not and not newer
     if general.isOnWindows() then
         if vim.fn.filereadable(workspace.getWorkspace() .. "compile_commands.json") == 1 then
-            vim.fn.system "del compile_commands.json"
+            vim.fn.system("del " .. workspace.getWindowsWorkspace() .. "compile_commands.json")
         end
         vim.fn.system(
             "mklink "
@@ -48,7 +66,19 @@ M.create_or_switch_symlinks = function()
                 .. "\\compile_commands.json"
         )
     else
-        print "Gotta do linux later"
+        --NEEDS LINUX TEST
+        if vim.fn.filereadable(workspace.getWorkspace() .. "compile_commands.json") == 1 then
+            vim.fn.system("unlink " .. workspace.getWorkspace() .. "compile_commands.json")
+        end
+        vim.fn.system(
+            "ln -s"
+                .. workspace.getWorkspace()
+                .. "build/"
+                .. cpp_opts.buildType
+                .. "/compile_commands.json "
+                .. workspace.getWorkspace()
+                .. "compile_commands.json"
+        )
     end
 end
 
@@ -58,6 +88,7 @@ M.cmake_generate_ninja_files = function()
         return
     end
 
+    generate_clang_format()
     generate_cmake_lists()
     create_cmake_build_folders()
 
@@ -75,8 +106,8 @@ M.cmake_generate_ninja_files = function()
 end
 
 M.add_file_to_cmake_lists = function()
-    if workspace.isWorkspaceSet == false then
-        vim.notify "Please set a workspace first"
+    if workspace.isWorkspaceSet() == false then
+        print "Please set a workspace first"
         return
     end
 
@@ -151,7 +182,7 @@ M.run_cpp = function()
 
     local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
 
-    if cpp_opts.buildType == "Debug" and cpp_opts.debugRunStart ~= "No raddbg" then
+    if cpp_opts.buildType == "Debug" and cpp_opts.debugRunStart ~= "No raddbg" and general.isOnWindows() == true then
         raddbg.runRadDbg(filepath, { run = cpp_opts.debugRunStart })
         return
     end

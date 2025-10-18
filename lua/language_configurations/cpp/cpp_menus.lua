@@ -44,7 +44,7 @@ customMenuCallbacks["Debug Run Options"] = function()
 end
 
 customMenuCallbacks["Cmake"] = function()
-    general.customOptionsMenu({ "Add file To Source" }, { rowCount = 4, widthRatio = 0.1 }, handle_cmake_menu)
+    general.customOptionsMenu({ "Add File To Source" }, { rowCount = 4, widthRatio = 0.1 }, handle_cmake_menu)
 end
 
 -- [[ Main interface api ]]
