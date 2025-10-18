@@ -2,7 +2,7 @@
 vim.cmd.colorscheme "My_Scheme"
 
 -- [[ Sets up all needed installations and env variables for them ]]
-require "tools.install_script"
+require "tools.installation_manager.install_environment"
 
 -- [[ Sets Up Options]]
 require "options"
