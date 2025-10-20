@@ -73,11 +73,11 @@ end
 workspace_tracker.setWorkspace = function(fileMarkers, folderMarkers)
     if workspace_tracker.isWorkspaceSet() == true then
         local input = vim.fn.input {
-            default = "n",
+            default = "Y",
             cancel_return = "abort",
             prompt = "Current Workspace: " .. workspace_tracker.getWorkspace() .. " Set New Workspace?(Y/n)",
         }
-        if input == "n" or input == "N" or "abort" then
+        if input == "n" or input == "N" or input == "abort" then
             print "Home not set"
             return
         end
