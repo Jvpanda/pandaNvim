@@ -89,7 +89,7 @@ end
 
 local installPkg = function(pkg)
     local executableName = pkg.binaryDir:match "[^/]*"
-    if pkg.linuxTags == nil or pkg.windowsTags == nil then
+    if general.isOnWindows() == false and pkg.linuxTags == nil then
         print(executableName, "Not available on this system")
         return
     end
