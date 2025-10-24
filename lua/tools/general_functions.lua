@@ -1,10 +1,24 @@
 local funcs = {}
 
+---@return boolean
 funcs.isOnWindows = function()
     if vim.fn.has "Win32" == 0 then
         return false
     else
         return true
+    end
+end
+
+-- A system agnostic file copy
+---@param source string Unix Based Path
+---@param destination string Unix Based Path
+funcs.copy_file = function(source, destination)
+    if funcs.isOnWindows() then
+        local windowsSource = source:gsub("/", "\\")
+        local windowsDestination = destination:gsub("/", "\\")
+        os.execute("COPY " .. windowsSource .. " " .. windowsDestination)
+    else
+        vim.system { "cp", source, destination }
     end
 end
 
@@ -79,10 +93,11 @@ function funcs.setDelWinKeymapForBuffer()
 end
 
 --Custom Option Selector
-funcs.customOptionsMenu = function(printedOptions, windowOpts, callbackFunction, callbackFunctionData)
+funcs.customOptionsMenu = function(printedOptions, windowOpts, callbackFunction, ...)
     callbackFunction = callbackFunction or nil
     printedOptions = printedOptions or {}
     windowOpts = windowOpts or {}
+    local passedArgs = ...
 
     funcs.create_floating_window(windowOpts)
     vim.api.nvim_buf_set_lines(0, 0, -1, false, printedOptions)
@@ -112,7 +127,7 @@ funcs.customOptionsMenu = function(printedOptions, windowOpts, callbackFunction,
             local line = vim.fn.getline "."
             funcs.deleteCurrentWindow(false)
             if callbackFunction then
-                callbackFunction(line, callbackFunctionData)
+                callbackFunction(line, passedArgs)
             end
         end, { buffer = true })
     end
