@@ -86,7 +86,7 @@ end
 
 Api.set_breakpoint_signs_from_raddbg = function()
     breakpoint_list = {}
-    get_breakpoints_from_raddbg()
+    Api.get_breakpoints_from_raddbg()
     vim.fn.sign_unplace "PandaBreakpointGroup"
     for i in ipairs(breakpoint_list) do
         if vim.fn.bufexists(breakpoint_list[i].file_path) == 1 then

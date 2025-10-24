@@ -176,7 +176,7 @@ local function create_buffer_menu()
         if FavoriteBuffers[key_index] ~= nil then
             bufNameLen = FavoriteBuffers[key_index].name:len()
             if bufNameLen > winWidth then
-                winWidth = bufNameLen
+                winWidth = bufNameLen + 3
             end
         end
     end
@@ -194,7 +194,7 @@ local function create_buffer_menu()
         if RecentBuffers[key_index] ~= nil then
             bufNameLen = RecentBuffers[key_index].name:len()
             if bufNameLen > winWidth then
-                winWidth = bufNameLen
+                winWidth = bufNameLen + 3
             end
         end
     end
@@ -211,12 +211,13 @@ local function create_buffer_menu()
         if BufferList[key_index] ~= nil then
             bufNameLen = BufferList[key_index].name:len()
             if bufNameLen > winWidth then
-                winWidth = bufNameLen
+                winWidth = bufNameLen + 3
             end
         end
     end
+    local windowOpts = { columnCharCount = winWidth + 7, rowCount = #menuTable + 3 }
 
-    general.customOptionsMenu(menuTable, { columnCharCount = winWidth + 4, rowCount = #menuTable + 3 }, selectBuffer)
+    general.customOptionsMenu(menuTable, windowOpts, selectBuffer)
 
     vim.fn.cursor(1, 1)
 
