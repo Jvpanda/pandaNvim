@@ -21,7 +21,6 @@ return {
                     -- `friendly-snippets` contains a variety of premade snippets.
                     --    https://github.com/rafamadriz/friendly-snippets
                 },
-                opts = {},
             },
         },
         --- @module 'blink.cmp'
@@ -80,6 +79,16 @@ return {
                         module = "lazydev.integrations.blink",
                         -- make lazydev completions top priority (see `:h blink.cmp`)
                         score_offset = 100,
+                    },
+
+                    lsp = {
+                        name = "LSP",
+                        module = "blink.cmp.sources.lsp",
+                        transform_items = function(_, items)
+                            return vim.tbl_filter(function(item)
+                                return item.kind ~= require("blink.cmp.types").CompletionItemKind.Keyword
+                            end, items)
+                        end,
                     },
                 },
             },

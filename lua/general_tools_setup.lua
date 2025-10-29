@@ -2,6 +2,7 @@ local buffer_selector = require "tools.buffer_selector"
 
 --[[Tools]]
 buffer_selector.setupBufferSelector()
+require "tools.lua_snippets"
 
 --[[My Commands]]
 
