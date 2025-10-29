@@ -6,43 +6,6 @@ local raddbg = require "language_configurations.cpp.raddbg"
 
 -- [[ Editor Environment Setup]]
 
-local generate_clang_format = function()
-    if vim.fn.filereadable ".clang-format" == 1 then
-        return
-    end
-
-    local source = vim.fn.fnamemodify(vim.fn.expand "$MYVIMRC", ":h") .. "/lua/language_configurations/cpp/.clang-format"
-    local destination = workspace.getWorkspace()
-    general.copy_file(source, destination)
-end
-
-local generate_editor_config = function()
-    if vim.fn.filereadable ".editorconfig" == 1 then
-        return
-    end
-
-    local source = vim.fn.fnamemodify(vim.fn.expand "$MYVIMRC", ":h") .. "/lua/language_configurations/cpp/.editorconfig"
-    local destination = workspace.getWorkspace()
-    general.copy_file(source, destination)
-end
-
--- [[Cmake Setup]]
-local generate_cmake_lists = function()
-    if vim.fn.filereadable "CMakeLists.txt" == 0 then
-        local file = io.open("CMakeLists.txt", "w")
-        if file ~= nil then
-            file:write(
-                "cmake_minimum_required(VERSION 3.10)\n"
-                    .. 'project("FillerProjectName")\n'
-                    .. "\nset(PROJECT_SOURCES src/main.cpp)\n"
-                    .. "\nadd_executable(execBinary ${PROJECT_SOURCES})"
-            )
-            file:close()
-            print "Created cmake txt"
-        end
-    end
-end
-
 local create_cmake_build_folders = function()
     if vim.fn.isdirectory "build" == 0 then
         vim.fn.mkdir "build"
@@ -52,6 +15,15 @@ local create_cmake_build_folders = function()
         vim.fn.mkdir("build/" .. cpp_opts.buildType)
         print("Created " .. cpp_opts.buildType .. " Build Dir")
     end
+end
+
+local generate_environment_file = function(fileName)
+    if vim.fn.filereadable(fileName) == 1 then
+        return
+    end
+    local source = vim.fn.fnamemodify(vim.fn.expand "$MYVIMRC", ":h") .. "/lua/language_configurations/cpp/cpp_project_environment/" .. fileName
+    local destination = workspace.getWorkspace()
+    general.copy_file(source, destination)
 end
 
 M.create_or_switch_symlinks = function()
@@ -95,19 +67,17 @@ M.cmake_generate_ninja_files = function()
         return
     end
 
-    generate_clang_format()
-    generate_editor_config()
-    generate_cmake_lists()
+    generate_environment_file ".editorconfig"
+    generate_environment_file ".clang-format"
+    generate_environment_file "CMakeUserPresets.json"
+    generate_environment_file "CMakeLists.txt"
     create_cmake_build_folders()
 
     print("Generating Ninja Files for " .. cpp_opts.buildType)
     local result = vim.fn.system {
         "cmake",
-        ".",
-        "-G Ninja",
-        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
-        "-DCMAKE_BUILD_TYPE=" .. cpp_opts.buildType,
-        "-B build/" .. cpp_opts.buildType .. "/",
+        "--preset",
+        cpp_opts.buildType,
     }
     vim.notify("----\n" .. result .. "----")
     M.create_or_switch_symlinks()
@@ -122,10 +92,10 @@ M.cmake_compile = function()
     if vim.fn.isdirectory("build/" .. cpp_opts.buildType) == 0 then
         M.cmake_generate_ninja_files()
     end
+
     vim.cmd.wa()
     print("Compiling... with build type " .. cpp_opts.buildType)
-    local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/"
-    local result = vim.fn.system { "cmake", "--build", filepath }
+    local result = vim.fn.system { "cmake", "--build", "--preset", cpp_opts.buildType }
     return result
 end
 
