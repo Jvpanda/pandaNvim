@@ -2,7 +2,11 @@ local general = require "tools.general_functions"
 
 local workspace_tracker = {}
 local workspaceDirectory = "unset"
-local markers = { cpp = { files = {}, folders = { "src", "git" } }, gdscript = { files = { "project.godot" }, folders = {} } }
+local markers = {
+    cpp = { files = {}, folders = { "src", "git", "build" } },
+    cmake = { files = {}, folders = { "src", "git", "build" } },
+    gdscript = { files = { "project.godot" }, folders = {} },
+}
 
 workspace_tracker.isWorkspaceSet = function()
     if workspaceDirectory == "unset" then
@@ -104,6 +108,10 @@ end
 
 vim.keymap.set("n", "<F1>", function()
     local ft = vim.bo.ft
+    if markers[ft] == nil then
+        vim.notify "Filetype not supported for workspaces"
+        return
+    end
     workspace_tracker.setWorkspace(markers[ft].files, markers[ft].folders)
 end)
 
