@@ -3,4 +3,4 @@ project("FillerProjectName")
 
 set(PROJECT_SOURCES src/main.cpp)
 
-add_executable(execBinary ${PROJECT_SOURCES})"
+add_executable(execBinary ${PROJECT_SOURCES})
