@@ -71,37 +71,41 @@ return {
                 documentation = { auto_show = false, auto_show_delay_ms = 500 },
             },
 
+            snippets = {
+                preset = "luasnip",
+            },
+
             sources = {
-                default = { "lazydev", "lsp", "path", "snippets", "buffer" },
+                default = { "snippets", "lazydev", "lsp", "path", "buffer" },
                 providers = {
+                    snippets = {
+                        score_offset = 100,
+                    },
                     lazydev = {
-                        name = "LazyDev",
+                        name = "lazydev",
                         module = "lazydev.integrations.blink",
-                        -- make lazydev completions top priority (see `:h blink.cmp`)
                         score_offset = 100,
                     },
 
                     lsp = {
-                        name = "LSP",
+                        name = "lsp",
                         module = "blink.cmp.sources.lsp",
                         transform_items = function(_, items)
                             return vim.tbl_filter(function(item)
-                                return item.kind ~= require("blink.cmp.types").CompletionItemKind.Keyword
+                                local excluded_labels = { ["if"] = true, ["return"] = true }
+                                if item.kind == require("blink.cmp.types").CompletionItemKind.Keyword then
+                                    return false
+                                elseif excluded_labels[item.label] then
+                                    return false
+                                end
+                                return true
                             end, items)
                         end,
                     },
                 },
             },
 
-            snippets = { preset = "luasnip" },
-
-            -- Blink.cmp includes an optional, recommended rust fuzzy matcher,
-            -- which automatically downloads a prebuilt binary when enabled.
-            --
-            -- By default, we use the Lua implementation instead, but you may enable
-            -- the rust implementation via `'prefer_rust_with_warning'`
-            --
-            -- See :h blink-cmp-config-fuzzy for more information
+            -- rust matcher`'prefer_rust_with_warning'` which uses a dl'd binary
             fuzzy = { implementation = "lua" },
 
             -- Shows a signature help window while you type arguments for a function

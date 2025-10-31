@@ -8,6 +8,13 @@ local s = ls.snippet
 local sn = ls.snippet_node
 local t = ls.text_node
 
+local show_if_empty_line = function(lineUntilCursor)
+    if lineUntilCursor:match "^%s*$" == nil then
+        return false
+    else
+        return true
+    end
+end
 local types = require "luasnip.util.types"
 ls.config.set_config {
     history = true,
@@ -64,7 +71,7 @@ end
 
 local generic_snippets = {
     s(
-        { trig = "{", snippetType = "autosnippet" },
+        { hidden = true, trig = "{", snippetType = "autosnippet" },
         fmt("{}", {
             curly_snippet(1),
         })
@@ -72,19 +79,22 @@ local generic_snippets = {
 }
 
 local cpp_snippets = {
-    s("#ifndef", fmt("#ifndef {}\n#define {}\n{}\n{}\n#endif", { i(1), rep(1), i(2), i(0) })),
-    s("for", fmt("for(int {};{} < {}; {}++){{\n\t{}\n}}\n{}", { i(1), rep(1), i(2), rep(1), i(3), i(0) })),
-    s("class", fmt("class {}{{\n\tpublic:\n\t\t{}\n\tprivate:\n\t\t{}\n}};\n{}", { i(1), i(2), i(3), i(0) })),
-    s("hello world", fmt('#include <iostream>\n\nint main(){{\n\tstd::cout << "HELLO GEAMY";\n\treturn 0;\n}} ', {})),
+    s("#ifndef", fmt("#ifndef {}\n#define {}\n{}\n{}\n#endif", { i(1), rep(1), i(2), i(0) }), { show_condition = show_if_empty_line }),
 
-    s("switch", fmt("switch({}){{\n{}\n{}", { i(1), get_case(2), i(0) })),
+    s("for", fmt("for(int {} = 0;{} < {}; {}++){{\n\t{}\n}}\n{}", { i(1), rep(1), i(2), rep(1), i(3), i(0) }), { show_condition = show_if_empty_line }),
+    s("class", fmt("class {}{{\n\tpublic:\n\t\t{}\n\tprivate:\n\t\t{}\n}};\n{}", { i(1), i(2), i(3), i(0) }), { show_condition = show_if_empty_line }),
+    s("hello world", fmt('#include <iostream>\n\nint main(){{\n\tstd::cout << "HELLO GEAMY";\n\treturn 0;\n}} ', {}), { show_condition = show_if_empty_line }),
+
+    s("switch", fmt("switch({}){{\n{}\n{}", { i(1), get_case(2), i(0) }), { show_condition = show_if_empty_line }),
 }
 
 local lua_snippets = {
-    s("if", fmt("if {} then\n\t{}\nend\n{}", { i(1), i(2), i(0) })),
+    s("if", fmt("if {} then\n\t{}\nend\n{}", { i(1), i(2), i(0) }), { show_condition = show_if_empty_line }),
 }
 
-ls.cleanup()
+-- ls.cleanup()
 ls.add_snippets("all", generic_snippets)
-ls.add_snippets("all", cpp_snippets)
-ls.add_snippets("all", lua_snippets)
+ls.add_snippets("cpp", cpp_snippets)
+ls.add_snippets("lua", lua_snippets)
+-- ls.add_snippets("all", cpp_snippets)
+-- ls.add_snippets("all", lua_snippets)
