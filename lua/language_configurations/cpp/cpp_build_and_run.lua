@@ -105,6 +105,9 @@ M.run_cpp = function()
         return
     end
 
+    local oldCommandHeight = vim.o.cmdheight
+    vim.o.cmdheight = 10
+
     local filepath = ""
     if general.isOnWindows() then
         filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
@@ -117,25 +120,35 @@ M.run_cpp = function()
         return
     end
 
-    local oldCommandHeight = vim.o.cmdheight
-    vim.o.cmdheight = 15
-
     if cpp_opts.runWindow == "floatingWindow" then
-        general.create_floating_window(cpp_opts.vimFloatingWindowSize)
-        vim.cmd.terminal(filepath)
+        local buf, win = general.create_floating_window(cpp_opts.vimFloatingWindowSize)
+        vim.api.nvim_set_current_win(win)
+        local jobid = vim.fn.jobstart(filepath, { term = true })
+        print(jobid)
         general.setDelWinKeymapForBuffer()
     elseif cpp_opts.runWindow == "window" then
         vim.cmd "vsplit"
         vim.cmd.terminal(filepath)
         general.setDelWinKeymapForBuffer()
     elseif cpp_opts.runWindow == "external" then
-        vim.cmd("!start " .. filepath)
+        if general.isOnWindows() == true then
+            vim.cmd("!start " .. filepath)
+        else
+            vim.cmd([[!gnome-terminal -- bash -c "]] .. filepath .. [[; read -p 'Press Enter to close...' "]])
+            -- vim.cmd([[!gnome-terminal -- bash -c "nvim -c 'lua vim.fn.jobstart(\"]] .. filepath .. [[\", { term = true });' -c 'autocmd BufLeave * exit' "]])
+        end
     elseif cpp_opts.runWindow == "external_permanent" then
-        vim.cmd("!start cmd /k " .. filepath)
+        if general.isOnWindows() == true then
+            vim.cmd("!start cmd /k " .. filepath)
+        else
+            vim.cmd([[!gnome-terminal -- bash -c "]] .. filepath .. [[; exec bash"]])
+        end
     end
 
     vim.o.cmdheight = oldCommandHeight
 end
+
+DebugKey("<leader>d", M.run_cpp, {})
 
 M.compile_and_run = function()
     if workspace.isWorkspaceSet() == false then

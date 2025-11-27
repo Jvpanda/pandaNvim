@@ -91,7 +91,7 @@ return {
             end, { desc = "[S]earch [C]urrent [D]irectory files" })
             -- shortcut to my source files
             vim.keymap.set("n", "<leader>scs", function()
-                builtin.find_files { cwd = "~/source" }
+                builtin.find_files { cwd = "~/Source" }
             end, { desc = "[S]earch [C]urrent [S]ource files" })
         end,
     },

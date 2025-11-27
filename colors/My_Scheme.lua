@@ -82,7 +82,7 @@ local setup = function()
 
     hi("Folded", { fg = c.cool_gray, bg = c.off_dark_bg })
 
-    hi("Normal", { fg = c.fg, bg = "none" })
+    hi("Normal", { fg = c.fg, bg = "#1C1C1C" })
     hi("NormalNC", { fg = c.fg, bg = "none" }) --Other window text
     hi("NormalFloat", { fg = c.fg, bg = "none" }) --Flating window text
     hi("FloatBorder", { fg = c.mauve })

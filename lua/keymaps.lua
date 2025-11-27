@@ -43,7 +43,7 @@ vim.keymap.set("n", "<space>p-", "<CMD>Oil<CR>", { desc = "Open parent directory
 -- Open parent directory in floating window
 vim.keymap.set("n", "-", require("oil").toggle_float)
 vim.keymap.set("n", "<space>ps", function()
-    require("oil").toggle_float "~/source/"
+    require("oil").toggle_float "~/Source/"
 end, { desc = "Open Source Dir" })
 
 -- [[Set current window to half the width of the screen]]

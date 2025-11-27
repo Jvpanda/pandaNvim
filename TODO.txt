@@ -1,0 +1,7 @@
+Implement new functions to simplify code:
+• |vim.fs.rm()| can delete files and directories.
+• |vim.fs.abspath()| converts paths to absolute paths.
+• |vim.fs.relpath()| gets relative path compared to base path.
+• |vim.fs.dir()| and |vim.fs.find()| can now follow symbolic links,
+  the behavior can be turn on using the new `follow` option.
+• |vim.fs.root()| can define "equal priority" via nested lists.

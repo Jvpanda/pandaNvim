@@ -70,7 +70,7 @@ function funcs.create_floating_window(opts)
     local buf = vim.api.nvim_create_buf(true, true) -- No file, scratch buffer
 
     -- Create the floating window
-    vim.api.nvim_open_win(buf, true, win_config)
+    return buf, vim.api.nvim_open_win(buf, true, win_config)
 end
 
 function funcs.deleteCurrentWindow(isTerminal)
