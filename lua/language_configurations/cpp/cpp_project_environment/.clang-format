@@ -8,4 +8,11 @@ AccessModifierOffset: 0
 IndentAccessModifiers: true
 IndentCaseBlocks: true
 IndentCaseLabels: true
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+BreakBeforeBraces: Allman
+
 
