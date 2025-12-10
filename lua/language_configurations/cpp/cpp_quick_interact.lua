@@ -56,7 +56,7 @@ M.create_getters_and_setters = function()
         end
 
         vim.fn.setreg("a", (vim.fn.getreg "a" .. "\t\tvoid set"))
-        vim.fn.setreg("a", (vim.fn.getreg "a" .. fname .. "(" .. type .. " a" .. fname .. ");\n"))
+        vim.fn.setreg("a", (vim.fn.getreg "a" .. fname .. "(const " .. type .. " a" .. fname .. ");\n"))
         vim.fn.setreg("b", (vim.fn.getreg "b" .. "void " .. class .. "::set"))
         vim.fn.setreg("b", (vim.fn.getreg "b" .. fname .. "(" .. type .. " a" .. fname .. ")\n{\n\t" .. fname .. " = a" .. fname .. ";\n}\n"))
     end
