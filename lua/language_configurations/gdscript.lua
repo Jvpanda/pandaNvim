@@ -1,5 +1,6 @@
 local gdscript_setup = {}
 local workspace_tracker = require "tools.workspace_tracker"
+local general = require "tools.general_functions"
 
 gdscript_setup.LSPSetup = function()
     vim.lsp.enable "gdscript"
@@ -29,9 +30,12 @@ end
 gdscript_setup.setupKeybinds = function()
     vim.keymap.set("n", "<F11>", function()
         if workspace_tracker.isWorkspaceSet() then
-            local command = "!start godot "
             local arguments = workspace_tracker.relativeWorkspacePath() .. vim.fn.expand "%:t:r" .. ".tscn"
-            vim.cmd(command .. arguments)
+            local command = [[!gnome-terminal -- bash -c "godot ]] .. arguments .. [[; read -p 'Press Enter to close...' "]]
+            if general.isOnWindows() then
+                command = "!start godot " .. arguments
+            end
+            vim.cmd(command)
             print "launched"
         else
             print "Please set home first"
@@ -39,7 +43,10 @@ gdscript_setup.setupKeybinds = function()
     end, { desc = "Launches Current Scene" })
     vim.keymap.set("n", "<F12>", function()
         if workspace_tracker.isWorkspaceSet() then
-            local command = "!start godot "
+            local command = [[!gnome-terminal -- bash -c "godot; read -p 'Press Enter to close...' "]]
+            if general.isOnWindows() then
+                command = "!start godot "
+            end
             vim.cmd(command)
         else
             print "Please set home first"
