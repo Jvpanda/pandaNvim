@@ -42,7 +42,9 @@ local function findWorkspaceByReadableFile(files)
 
     while currentDir ~= vim.fn.expand "~" .. "/" and safety < 30 do
         for _, searchFile in pairs(files) do
+            -- print("Searching " .. currentDir) --debug
             if vim.fn.filereadable(currentDir .. searchFile) == 1 then
+                -- print("Returning: " .. currentDir) -- debug
                 return currentDir
             end
         end
@@ -90,7 +92,7 @@ workspace_tracker.setWorkspace = function(fileMarkers, folderMarkers)
     if fileMarkers ~= {} and fileMarkers ~= nil then
         workspaceDirectory = findWorkspaceByReadableFile(fileMarkers)
     end
-    if folderMarkers ~= {} and folderMarkers ~= nil then
+    if folderMarkers ~= {} and folderMarkers ~= nil and workspaceDirectory == "unset" then
         workspaceDirectory = findWorkspaceByDirectory(folderMarkers)
     end
 
@@ -103,6 +105,7 @@ workspace_tracker.setWorkspace = function(fileMarkers, folderMarkers)
         vim.cmd.cd(workspaceDirectory)
     else
         print "Home could not be set"
+        print("Info: \n" .. workspaceDirectory)
     end
 end
 
