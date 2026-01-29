@@ -15,6 +15,9 @@ recursePPID = function(co, pid)
             termPID = lpid
             coroutine.resume(co, lpid)
             return lpid
+        elseif ppid == "0" then
+            print "Terminal Not Found"
+            return
         else
             print("PID: " .. lpid, "Command: " .. cmd, "PPID: " .. ppid)
             termPID = recursePPID(co, ppid)
