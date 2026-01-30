@@ -1,10 +1,10 @@
--- ---@param pid any
--- ---@return integer
-local recursePPID = function(pid) end
+local M = {}
+---@param co any coroutine
+---@param pid any
+local recursePPID = function(co, pid) end
 
 recursePPID = function(co, pid)
-    local termPID = 0
-    local ppid = vim.system({ "ps", "-o", "pid,ppid,comm", "-p", pid }, {}, function(obj)
+    vim.system({ "ps", "-o", "pid,ppid,comm", "-p", pid }, {}, function(obj)
         local sp = vim.split(obj.stdout, "\n")
 
         local lpid, ppid, cmd = sp[2]:match "^%s*(%S+)%s*(%S+)%s*(%S+)"
@@ -12,38 +12,39 @@ recursePPID = function(co, pid)
         if find ~= nil then
             print "Found"
             print("PID: " .. lpid, "Command: " .. cmd, "PPID: " .. ppid)
-            termPID = lpid
-            coroutine.resume(co, lpid)
-            return lpid
+            coroutine.resume(co, cmd)
+            return
         elseif ppid == "0" then
             print "Terminal Not Found"
             return
         else
             print("PID: " .. lpid, "Command: " .. cmd, "PPID: " .. ppid)
-            termPID = recursePPID(co, ppid)
+            recursePPID(co, ppid)
         end
     end)
-    return termPID
 end
 
-local func2 = function()
-    local initialPID = tostring(vim.fn.getpid())
-    local result = coroutine.yield(function(co)
-        recursePPID(co, initialPID)
+M.getTerminal = function(cppOptsModule)
+    local co = coroutine.create(function()
+        print "test"
+        local initialPID = tostring(vim.fn.getpid())
+        local result = coroutine.yield(function(co)
+            recursePPID(co, initialPID)
+        end)
+        local terminalName = result:match "^%w+"
+        cppOptsModule.terminal = terminalName
+        print(cppOptsModule.terminal)
     end)
-    print("FUNC: ", result)
-end
 
-local co = coroutine.create(func2)
-local ok, yielded = coroutine.resume(co)
-print(ok, yielded)
+    local ok, yielded = coroutine.resume(co)
+    print(ok, yielded)
 
-if not ok then
-    error(yielded)
-end
-if type(yielded) == "function" then
+    if not ok then
+        error(yielded)
+        return
+    end
+
     yielded(co)
 end
 
--- P(vim.fn.getwininfo(1000))
--- P(vim.fn.winlayout(1))
+return M

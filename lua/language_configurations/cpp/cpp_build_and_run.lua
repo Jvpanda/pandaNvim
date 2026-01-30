@@ -120,8 +120,6 @@ M.run_cpp = function()
         return
     end
 
-    local terminalName = "xfce4"
-
     if cpp_opts.runWindow == "floatingWindow" then
         local buf, win = general.create_floating_window(cpp_opts.vimFloatingWindowSize)
         vim.api.nvim_set_current_win(win)
@@ -136,7 +134,7 @@ M.run_cpp = function()
         if general.isOnWindows() == true then
             vim.cmd("!start " .. filepath)
         else
-            vim.cmd([[!]] .. terminalName .. [[-terminal --command="bash -ic ']] .. filepath .. [[; read -p \"Press Enter to Close\"'"]])
+            vim.cmd([[!]] .. cpp_opts.terminal .. [[-terminal -- bash -ic ']] .. filepath .. [[; read -p "Press Enter to Close"']])
             -- vim.cmd([[!gnome-terminal -- bash -c "nvim -c 'lua vim.fn.jobstart(\"]] .. filepath .. [[\", { term = true });' -c 'autocmd BufLeave * exit' "]])
         end
     elseif cpp_opts.runWindow == "external_permanent" then
