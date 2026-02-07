@@ -7,7 +7,7 @@ buffer_selector.setupBufferSelector()
 require "tools.lua_snippets"
 
 --cpp Bootstrap
-env.getTerminal(cpp_opts)
+env.getTerminalForCPP(cpp_opts)
 
 --[[My Commands]]
 

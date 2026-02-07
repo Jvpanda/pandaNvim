@@ -3,7 +3,8 @@ local cpp_opts = {
     runWindow = "external",
     vimFloatingWindowSize = { heightRatio = 0.45, widthRatio = 0.25, col = 1, row = 0 },
     debugRunStart = "run",
-    terminal = "",
+    terminal = nil,
+    backupTerminal = nil,
     compileFlags = "", --need to implement
     buildFlags = "", --need to implement
     workspaceModifier = "", --need to implement

@@ -71,6 +71,7 @@ M.cmake_generate_ninja_files = function()
     generate_environment_file ".clang-format"
     generate_environment_file "CMakeUserPresets.json"
     generate_environment_file "CMakeLists.txt"
+    generate_environment_file ".gitignore"
     create_cmake_build_folders()
 
     print("Generating Ninja Files for " .. cpp_opts.buildType)
@@ -108,18 +109,24 @@ M.run_cpp = function()
     local oldCommandHeight = vim.o.cmdheight
     vim.o.cmdheight = 10
 
-    local filepath = ""
+    local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary"
     if general.isOnWindows() then
-        filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary.exe"
-    else
-        filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary"
+        filepath = filepath .. ".exe"
     end
 
     if cpp_opts.buildType == "Debug" and cpp_opts.debugRunStart ~= "No raddbg" and general.isOnWindows() == true then
         raddbg.runRadDbg(filepath, { run = cpp_opts.debugRunStart })
         return
+    else
+        print "No Debug Support yet"
     end
 
+    M.create_terminal_from_type(filepath)
+
+    vim.o.cmdheight = 1
+end
+
+M.create_terminal_from_type = function(filepath)
     if cpp_opts.runWindow == "floatingWindow" then
         local buf, win = general.create_floating_window(cpp_opts.vimFloatingWindowSize)
         vim.api.nvim_set_current_win(win)
@@ -131,23 +138,55 @@ M.run_cpp = function()
         vim.cmd.terminal(filepath)
         general.setDelWinKeymapForBuffer()
     elseif cpp_opts.runWindow == "external" then
+        M.create_terminal_instance(filepath, false)
+    elseif cpp_opts.runWindow == "external_permanent" then
+        M.create_terminal_instance(filepath, true)
+    end
+end
+
+M.create_terminal_instance = function(filepath, permanent)
+    local terminalCommands = {
+        gnome = {
+            begin = [[gnome-terminal -- bash -ic ']],
+            ending = [[; read -p "Press Enter to Exit"']],
+            permanentEnding = [[;read -p "Press Enter to Exit";exec bash']],
+        },
+        xfce = {
+            begin = [[xfce4-terminal -e "bash -ic ']],
+            ending = [[;read -p \"Press Enter to Exit\"'"]],
+            permanentEnding = [[;read -p \"Press Enter to Exit\";exec bash'"]],
+        },
+        tmux = {
+            begin = [[tmux split-window -h -l 10 ']],
+            ending = [[;read -p "Press Enter to Exit"']],
+            permanentEnding = [[;read -p "Press Enter to Exit";exec bash']],
+        },
+    }
+
+    local command = ""
+
+    if not permanent then
         if general.isOnWindows() == true then
-            vim.cmd("!start " .. filepath)
+            command = "start " .. filepath
+        elseif cpp_opts.terminal == "ghostty" then
+            command = terminalCommands[cpp_opts.backupTerminal].begin .. filepath .. terminalCommands[cpp_opts.backupTerminal].ending .. "'"
         else
-            vim.cmd([[!]] .. cpp_opts.terminal .. [[-terminal -- bash -ic ']] .. filepath .. [[; read -p "Press Enter to Close"']])
+            command = terminalCommands[cpp_opts.terminal].begin .. filepath .. terminalCommands[cpp_opts.terminal].ending .. "'"
             -- vim.cmd([[!gnome-terminal -- bash -c "nvim -c 'lua vim.fn.jobstart(\"]] .. filepath .. [[\", { term = true });' -c 'autocmd BufLeave * exit' "]])
         end
-    elseif cpp_opts.runWindow == "external_permanent" then
+    else
         if general.isOnWindows() == true then
-            vim.cmd("!start cmd /k " .. filepath)
+            command = "!start cmd /k " .. filepath
+        elseif cpp_opts.terminal == "ghostty" then
+            command = terminalCommands[cpp_opts.backupTerminal].begin .. filepath .. terminalCommands[cpp_opts.backupTerminal].ending .. ";exec bash'"
         else
-            vim.cmd([[!gnome-terminal -- bash -c "]] .. filepath .. [[; exec bash"]])
+            command = terminalCommands[cpp_opts.terminal].begin .. filepath .. terminalCommands[cpp_opts.terminal].ending .. ";exec bash'"
         end
     end
 
-    vim.o.cmdheight = oldCommandHeight
+    print(command)
+    vim.fn.system(command)
 end
-DebugKey("<leader>d", M.run_cpp, {})
 
 M.compile_and_run = function()
     if workspace.isWorkspaceSet() == false then
@@ -172,59 +211,7 @@ M.compile_and_run = function()
     end
 end
 
--- [[ Additional Functions ]]
-M.add_file_to_cmake_lists = function()
-    if workspace.isWorkspaceSet() == false then
-        print "Please set a workspace first"
-        return
-    end
-
-    local file = io.open("CMakeLists.txt", "r")
-    local fileTable = {}
-    local sourceLine = 1
-
-    if file ~= nil then
-        for line in file:lines() do
-            if line == "" then
-                table.insert(fileTable, "\n")
-            else
-                table.insert(fileTable, line .. "\n")
-            end
-        end
-
-        file:close()
-    end
-
-    for i in ipairs(fileTable) do
-        if string.find(fileTable[i], "set") and string.find(fileTable[i], "PROJECT_SOURCES") then
-            break
-        end
-        sourceLine = sourceLine + 1
-    end
-
-    for i in ipairs(fileTable) do
-        if string.find(fileTable[i + sourceLine - 1], ")") then
-            sourceLine = i + sourceLine - 1
-            break
-        end
-    end
-
-    local filepath = workspace.relativeWorkspacePath()
-
-    local newLines = string.sub(fileTable[sourceLine], 1, -3)
-    newLines = newLines .. "\n    " .. filepath .. vim.fn.expand "%:t"
-    newLines = newLines .. "\n    " .. filepath .. vim.fn.expand "%:t:r" .. ".cpp)\n"
-    fileTable[sourceLine] = newLines
-
-    local fileOut = io.open("CMakeLists.txt", "w")
-    if fileOut ~= nil then
-        for i in pairs(fileTable) do
-            fileOut:write(fileTable[i])
-        end
-
-        fileOut:close()
-    end
-    print "Cmake writen to succesfully"
-end
+print(cpp_opts.terminal, cpp_opts.backupTerminal)
+DebugKey("<leader>d", M.run_cpp, {})
 
 return M
