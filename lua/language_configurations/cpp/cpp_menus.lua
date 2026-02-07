@@ -1,4 +1,5 @@
 local cpp_opts = require "language_configurations.cpp.cpp_opts"
+local cpp_quick = require "language_configurations.cpp.cpp_quick_interact"
 local general = require "tools.general_functions"
 local build = require "language_configurations.cpp.cpp_build_and_run"
 local qa = require "language_configurations.cpp.cpp_quick_interact"
@@ -17,7 +18,7 @@ end
 
 local handle_cmake_menu = function(option)
     if option == "Add File To Source" then
-        build.add_file_to_cmake_lists()
+        cpp_quick.add_file_to_cmake_lists()
     end
 end
 
