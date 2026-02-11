@@ -5,6 +5,7 @@ local gdscript_setup = require "language_configurations.gdscript"
 local python_setup = require "language_configurations.python"
 local lua_setup = require "language_configurations.lua_setup"
 local go_setup = require "language_configurations.go"
+local rust_setup = require "language_configurations.rust"
 local lspKeybindsAndHighlighing = require "language_configurations.lsp-keybindsAndHighlighting"
 
 --[[Configure LSP's]]
@@ -16,6 +17,7 @@ arduino_setup.LSPSetup()
 gdscript_setup.LSPSetup()
 python_setup.LSPSetup()
 lua_setup.LSPSetup()
+rust_setup.LSPSetup()
 
 -- [[ Basic Autocommands ]]
 local myAutogroup = vim.api.nvim_create_augroup("LSPKeybindAutogroup", { clear = true })
