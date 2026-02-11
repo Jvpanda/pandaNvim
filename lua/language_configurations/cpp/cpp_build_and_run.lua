@@ -211,7 +211,4 @@ M.compile_and_run = function()
     end
 end
 
-print(cpp_opts.terminal, cpp_opts.backupTerminal)
-DebugKey("<leader>d", M.run_cpp, {})
-
 return M

@@ -11,7 +11,7 @@ return {
                 require("nvim-treesitter.install").compilers = { "gcc", "clang", "zig" }
             end
             require("nvim-treesitter.configs").setup {
-                ensure_installed = { "python", "c", "html", "lua", "luadoc", "markdown", "markdown_inline", "vim", "vimdoc", "cpp" },
+                ensure_installed = { "python", "c", "html", "lua", "luadoc", "markdown", "markdown_inline", "vim", "vimdoc", "cpp", "yaml" },
                 auto_install = true,
                 sync_install = false,
                 ignore_install = {},
