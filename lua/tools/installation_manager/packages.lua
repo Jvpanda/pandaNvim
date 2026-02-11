@@ -58,6 +58,13 @@ M.Pkgs = {
         windowsTags = "windows%-x86_64.zip",
         linuxTags = "linux%-x86_64.tar.gz",
     },
+    --TODO fix this
+    rust_analyzer = {
+        repo = "rust-lang/rust-analyzer",
+        binaryDir = "rust-analyzer/",
+        windowsTags = "x86_64%-pc%-windows%-msvc.zip",
+        linuxTags = "x86_64%-unknown%-linux%-gnu.gz",
+    },
 }
 
 M.fullPkgs = {
@@ -65,5 +72,6 @@ M.fullPkgs = {
     lua = { M.Pkgs.lua_ls, M.Pkgs.stylua },
     arduino = { M.Pkgs.arduino_cli, M.Pkgs.arduino_lsp },
     tools = { M.Pkgs.ripgrep },
+    rust = { M.Pkgs.rust_analyzer },
 }
 return M

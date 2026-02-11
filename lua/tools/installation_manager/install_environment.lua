@@ -28,7 +28,9 @@ end
 
 local function download_and_unzip(pkg)
     local downloadedFile, version = dl.download_latest(pkg)
-    local filetype = vim.fn.fnamemodify(downloadedFile, ":e")
+    local filetype = vim.fn.fnamemodify(downloadedFile, ":e:e")
+    print(filetype)
+
     local executableName = pkg.binaryDir:match "[^/]*"
 
     local unzipDir = packs.baseInstallDir .. pkg.binaryDir:match "[^/]*" .. "/"
@@ -37,14 +39,24 @@ local function download_and_unzip(pkg)
         vim.fn.mkdir(unzipDir)
     end
 
+    print(unzipDir)
     local unzipCommand = {}
-    if filetype == "gz" then
+    if filetype == "tar.gz" then
+        print "Using this command"
         unzipCommand = {
             "tar",
             "-xzf",
             packs.baseInstallDir .. downloadedFile,
             "-C",
             unzipDir,
+        }
+    elseif filetype == "gz" then
+        print("mv " .. packs.baseInstallDir .. downloadedFile .. " " .. unzipDir .. downloadedFile)
+        os.execute("mv " .. packs.baseInstallDir .. downloadedFile .. " " .. unzipDir .. downloadedFile)
+        unzipCommand = {
+            "gzip",
+            "-d",
+            unzipDir .. downloadedFile,
         }
     elseif general.isOnWindows() == false then
         unzipCommand = {
@@ -63,7 +75,7 @@ local function download_and_unzip(pkg)
         }
     end
     Await_System(unzipCommand)
-    os.remove(packs.baseInstallDir .. downloadedFile)
+    -- os.remove(packs.baseInstallDir .. downloadedFile)
 
     if general.isOnWindows() then
         if vim.fn.executable(packs.baseInstallDir .. pkg.binaryDir .. executableName) == 0 then
@@ -72,12 +84,16 @@ local function download_and_unzip(pkg)
         end
     else
         if vim.fn.executable(packs.baseInstallDir .. pkg.binaryDir .. executableName) == 0 then
-            local extraInstallFile = unpack(vim.split(vim.fn.glob(unzipDir .. "*"), "\n", { trimempty = true }))
-            os.execute("mv " .. extraInstallFile .. "/* " .. unzipDir)
-            Await_System { "rm", "-rf", extraInstallFile }
+            if filetype == "gz" then
+                os.execute("chmod 770 " .. unzipDir .. downloadedFile:sub(1, -4))
+                os.execute("mv " .. unzipDir .. downloadedFile:sub(1, -4) .. " " .. unzipDir .. pkg.binaryDir:sub(1, -2))
+            else
+                local extraInstallFile = unpack(vim.split(vim.fn.glob(unzipDir .. "*"), "\n", { trimempty = true }))
+                os.execute("mv " .. extraInstallFile .. "/* " .. unzipDir)
+                Await_System { "rm", "-rf", extraInstallFile }
+            end
         end
     end
-
     local versionFile = io.open(unzipDir .. "PandaVersion.txt", "w")
     if versionFile ~= nil then
         versionFile:write(version)
@@ -99,8 +115,19 @@ local installPkg = function(pkg)
         return
     end
     if vim.fn.executable(executableName) == 1 then
-        print(executableName .. " is already on the device!")
-        return
+        --Rust is the only one that still allows executable while it not being available
+        local hasRust = true
+        if executableName == "rust-analyzer" then
+            local test = vim.fn.system "rust-analyzer --version"
+            if test:find "error" ~= nil then
+                hasRust = false
+            end
+        end
+
+        if hasRust then
+            print(executableName .. " is already on the device!")
+            return
+        end
     end
 
     download_and_unzip(pkg)
@@ -159,7 +186,7 @@ local setupMyInstallations = function()
         desc = "My custom installs command",
 
         complete = function(ArgLead)
-            local installs = { "all", "arduino", "lua", "tools", "cpp", "update" }
+            local installs = { "all", "arduino", "lua", "tools", "cpp", "update", "rust" }
             local matches = {}
 
             for _, individualInstalls in ipairs(installs) do
