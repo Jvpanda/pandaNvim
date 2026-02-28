@@ -28,15 +28,21 @@ function cpp_keybinds.setup_keybinds()
     --[[ Regular Keybinds ]]
     vim.keymap.set("n", "<F9>", menu.call_menu)
 
-    vim.keymap.set("n", "<F10>", build.cmake_generate_ninja_files)
-
-    vim.keymap.set("n", "<F11>", function()
-        vim.notify(build.cmake_compile())
+    vim.keymap.set("n", "<F10>", function()
+        Async(build.cmake_generate_ninja_files)
     end)
 
-    vim.keymap.set("n", "<f12>", build.compile_and_run)
+    vim.keymap.set("n", "<F11>", function()
+        Async(build.KeybindCompile)
+    end)
 
-    vim.keymap.set("n", "<S-f12>", build.run_cpp)
+    vim.keymap.set("n", "<f12>", function()
+        Async(build.compile_and_run)
+    end)
+
+    vim.keymap.set("n", "<S-f12>", function()
+        Async(build.run_cpp)
+    end)
 end
 
 return cpp_keybinds

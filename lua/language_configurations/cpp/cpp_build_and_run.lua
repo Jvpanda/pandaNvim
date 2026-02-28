@@ -5,18 +5,6 @@ local workspace = require "tools.workspace_tracker"
 local raddbg = require "language_configurations.cpp.raddbg"
 
 -- [[ Editor Environment Setup]]
-
-local create_cmake_build_folders = function()
-    if vim.fn.isdirectory "build" == 0 then
-        vim.fn.mkdir "build"
-        print "Created build dir"
-    end
-    if vim.fn.isdirectory "build/" .. cpp_opts.buildType == 0 then
-        vim.fn.mkdir("build/" .. cpp_opts.buildType)
-        print("Created " .. cpp_opts.buildType .. " Build Dir")
-    end
-end
-
 local generate_environment_file = function(fileName)
     if vim.fn.filereadable(fileName) == 1 then
         return
@@ -31,33 +19,24 @@ M.create_or_switch_symlinks = function()
         return
     end
 
-    --Note vim.system is async and newer, vim.fn.system is not and not newer
     if general.isOnWindows() then
         if vim.fn.filereadable(workspace.getWorkspace() .. "/build/compile_commands.json") == 1 then
-            vim.fn.system("del " .. workspace.getWindowsWorkspace() .. "build\\compile_commands.json")
+            Await_System({ "del", workspace.getWindowsWorkspace() .. "build\\compile_commands.json" }, {})
         end
-        vim.fn.system(
-            "mklink "
-                .. workspace.getWindowsWorkspace()
-                .. "build\\compile_commands.json "
-                .. workspace.getWindowsWorkspace()
-                .. "build\\"
-                .. cpp_opts.buildType
-                .. "\\compile_commands.json"
-        )
+        Await_System({
+            "mklink",
+            workspace.getWindowsWorkspace() .. "build\\compile_commands.json",
+            workspace.getWindowsWorkspace() .. "build\\" .. cpp_opts.buildType .. "\\compile_commands.json",
+        }, {})
     else
         if vim.fn.filereadable(workspace.getWorkspace() .. "compile_commands.json") == 1 then
-            vim.fn.system("unlink " .. workspace.getWorkspace() .. "build/compile_commands.json")
+            Await_System({ "unlink", workspace.getWorkspace() .. "build/compile_commands.json" }, {})
         end
-        vim.fn.system(
-            "ln "
-                .. workspace.getWorkspace()
-                .. "build/"
-                .. cpp_opts.buildType
-                .. "/compile_commands.json "
-                .. workspace.getWorkspace()
-                .. "build/compile_commands.json"
-        )
+        local result = Await_System({
+            "ln",
+            workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/compile_commands.json",
+            workspace.getWorkspace() .. "build/compile_commands.json",
+        }, {})
     end
 end
 
@@ -72,10 +51,9 @@ M.cmake_generate_ninja_files = function()
     generate_environment_file "CMakeUserPresets.json"
     generate_environment_file "CMakeLists.txt"
     generate_environment_file ".gitignore"
-    create_cmake_build_folders()
 
-    print("Generating Ninja Files for " .. cpp_opts.buildType)
-    local result = vim.fn.system {
+    print("Generating Build Files for " .. cpp_opts.buildType)
+    local result = Await_System {
         "cmake",
         "--preset",
         cpp_opts.buildType,
@@ -96,7 +74,7 @@ M.cmake_compile = function()
 
     vim.cmd.wa()
     print("Compiling... with build type " .. cpp_opts.buildType)
-    local result = vim.fn.system { "cmake", "--build", "--preset", cpp_opts.buildType }
+    local result = Await_System({ "cmake", "--build", "--preset", cpp_opts.buildType }, {})
     return result
 end
 
@@ -107,7 +85,7 @@ M.run_cpp = function()
     end
 
     local oldCommandHeight = vim.o.cmdheight
-    vim.o.cmdheight = 10
+    vim.o.cmdheight = 15
 
     local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary"
     if general.isOnWindows() then
@@ -117,13 +95,13 @@ M.run_cpp = function()
     if cpp_opts.buildType == "Debug" and cpp_opts.debugRunStart ~= "No raddbg" and general.isOnWindows() == true then
         raddbg.runRadDbg(filepath, { run = cpp_opts.debugRunStart })
         return
-    else
+    elseif cpp_opts.buildType == "Debug" then
         print "No Debug Support yet"
     end
 
     M.create_terminal_from_type(filepath)
 
-    vim.o.cmdheight = 1
+    vim.o.cmdheight = oldCommandHeight
 end
 
 M.create_terminal_from_type = function(filepath)
@@ -131,7 +109,6 @@ M.create_terminal_from_type = function(filepath)
         local buf, win = general.create_floating_window(cpp_opts.vimFloatingWindowSize)
         vim.api.nvim_set_current_win(win)
         local jobid = vim.fn.jobstart(filepath, { term = true })
-        print(jobid)
         general.setDelWinKeymapForBuffer()
     elseif cpp_opts.runWindow == "window" then
         vim.cmd "vsplit"
@@ -184,8 +161,17 @@ M.create_terminal_instance = function(filepath, permanent)
         end
     end
 
-    print(command)
     vim.fn.system(command)
+end
+
+M.KeybindCompile = function()
+    if workspace.isWorkspaceSet() == false then
+        vim.notify "Please set a home directory"
+        return
+    end
+
+    local compilationResult = "-------\n" .. M.cmake_compile() .. "-------\n"
+    vim.notify(compilationResult)
 end
 
 M.compile_and_run = function()
