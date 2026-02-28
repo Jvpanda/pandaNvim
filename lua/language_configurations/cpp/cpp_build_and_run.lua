@@ -58,7 +58,10 @@ M.cmake_generate_ninja_files = function()
         "--preset",
         cpp_opts.buildType,
     }
+    local oldCommandHeight = vim.o.cmdheight
+    vim.o.cmdheight = 20
     vim.notify("----\n" .. result .. "----")
+    vim.o.cmdheight = oldCommandHeight
     M.create_or_switch_symlinks()
 end
 
@@ -84,9 +87,6 @@ M.run_cpp = function()
         return
     end
 
-    local oldCommandHeight = vim.o.cmdheight
-    vim.o.cmdheight = 15
-
     local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary"
     if general.isOnWindows() then
         filepath = filepath .. ".exe"
@@ -100,8 +100,6 @@ M.run_cpp = function()
     end
 
     M.create_terminal_from_type(filepath)
-
-    vim.o.cmdheight = oldCommandHeight
 end
 
 M.create_terminal_from_type = function(filepath)
@@ -188,7 +186,7 @@ M.compile_and_run = function()
         and compilationResult ~= "Please set a home directory"
     then
         local oldCommandHeight = vim.o.cmdheight
-        vim.o.cmdheight = 15
+        vim.o.cmdheight = 20
         print(compilationResult)
         vim.o.cmdheight = oldCommandHeight
         M.run_cpp()
