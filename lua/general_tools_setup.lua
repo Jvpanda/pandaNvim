@@ -1,13 +1,16 @@
 local buffer_selector = require "tools.buffer_selector"
 local cpp_opts = require "language_configurations.cpp.cpp_opts"
 local env = require "tools.environment_setup"
+local general = require "tools.general_functions"
 
 --[[Tools]]
 buffer_selector.setupBufferSelector()
 require "tools.lua_snippets"
 
 --cpp Bootstrap
-env.getTerminalForCPP(cpp_opts)
+if not general.isOnWindows() then
+    env.getTerminalForCPP(cpp_opts)
+end
 
 --[[My Commands]]
 
