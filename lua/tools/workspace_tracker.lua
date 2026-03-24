@@ -79,7 +79,7 @@ end
 workspace_tracker.setWorkspace = function(fileMarkers, folderMarkers)
     if workspace_tracker.isWorkspaceSet() == true then
         local input = vim.fn.input {
-            default = "n",
+            default = "Y",
             cancelreturn = "abort",
             prompt = "Current Workspace: " .. workspace_tracker.getWorkspace() .. " Set New Workspace?(Y/n)",
         }
