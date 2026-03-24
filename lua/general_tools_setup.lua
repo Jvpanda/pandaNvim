@@ -8,7 +8,7 @@ buffer_selector.setupBufferSelector()
 require "tools.lua_snippets"
 
 --cpp Bootstrap
-if not general.isOnWindows() then
+if general.isOnWindows() == false then
     env.getTerminalForCPP(cpp_opts)
 end
 
