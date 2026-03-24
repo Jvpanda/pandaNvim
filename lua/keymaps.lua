@@ -1,3 +1,5 @@
+local general = require "tools.general_functions"
+
 -- Clear highlights on search when pressing <Esc> in normal mode
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
@@ -9,6 +11,8 @@ vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", { desc = "Exit terminal mode" }
 
 --Exits Insert mode another way
 vim.keymap.set("i", "jj", "<Esc>", { desc = "Exit insert mode shortcut" })
+vim.keymap.set("i", "jJ", "<Esc>", { desc = "Exit insert mode shortcut" })
+vim.keymap.set("i", "Jj", "<Esc>", { desc = "Exit insert mode shortcut" })
 vim.keymap.set("i", "JJ", "<Esc>", { desc = "Exit insert mode shortcut" })
 
 --Remaps jumps to also center screen
@@ -25,24 +29,19 @@ vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper win
 -- development
 vim.keymap.set("n", "<leader>x", ":w<CR>:source %<CR>", { noremap = true, desc = "Saves then runs current file" })
 
--- line numbers for school
-vim.keymap.set("n", "<leader>pp", function()
-    vim.cmd "%s/^/\\=line('.').\". \""
-    vim.cmd "nohlsearch"
-end, { desc = "Create line numbers in Text" })
-
 --Open explorer on the current directory
 vim.keymap.set("n", "<leader>pa", function()
     local filepath = vim.fn.expand "%:p:h"
-    vim.fn.system("start " .. filepath)
+    if general.isOnWindows() then
+        vim.fn.system("start " .. filepath)
+    else
+        vim.fn.system("nemo " .. filepath)
+    end
 end, { desc = "Open Current Window in Explorer" })
-
--- Open parent directory in current window
-vim.keymap.set("n", "<space>p-", "<CMD>Oil<CR>", { desc = "Open parent directory in non floating window" })
 
 -- Open parent directory in floating window
 vim.keymap.set("n", "-", require("oil").toggle_float)
-vim.keymap.set("n", "<space>ps", function()
+vim.keymap.set("n", "<leader>ps", function()
     require("oil").toggle_float "~/Source/"
 end, { desc = "Open Source Dir" })
 
@@ -50,7 +49,7 @@ end, { desc = "Open Source Dir" })
 vim.keymap.set("n", "<leader>po", function()
     local width = math.floor(vim.o.columns * 0.5)
     vim.api.nvim_win_set_width(0, width)
-end, { desc = "Set current window to hald the editor width" })
+end, { desc = "Set current window to half the editor width" })
 
 --Getting and clearing messages
 vim.keymap.set("n", "<leader>pm", ":messages<CR>", { desc = "See messages" })
@@ -60,3 +59,15 @@ end, { desc = "Clear messages" })
 
 -- Inspect what's under the cursor
 vim.keymap.set("n", "<leader>i", vim.show_pos, { desc = "Inspect whatever is under the cursor" })
+
+-- Comment out a whole block cpp
+vim.keymap.set("n", "<leader>pc", "[{O/*<c-[>j%o*/<c-[>", { desc = "Comment out a whole block cpp" })
+-- Uncomment out a whole block cpp
+vim.keymap.set("n", "<leader>pu", "[{kdd%jdd<c-[>", { desc = "Uncomment out a whole block cpp" })
+
+-- Change external cwd
+vim.keymap.set("n", "<leader>pd", function()
+    local filepath = vim.fn.expand "%:p:h"
+    vim.fn.chdir(filepath)
+    print("CD'd to " .. filepath)
+end, { desc = "Change external and internal cwd to current files dir" })
