@@ -146,16 +146,16 @@ M.create_terminal_instance = function(filepath, permanent)
         elseif cpp_opts.terminal == "ghostty" then
             command = terminalCommands[cpp_opts.backupTerminal].begin .. filepath .. terminalCommands[cpp_opts.backupTerminal].ending
         else
-            command = terminalCommands[cpp_opts.terminal].begin .. filepath .. terminalCommands[cpp_opts.terminal].permanentEnding
+            command = terminalCommands[cpp_opts.terminal].begin .. filepath .. terminalCommands[cpp_opts.terminal].ending
             -- vim.cmd([[!gnome-terminal -- bash -c "nvim -c 'lua vim.fn.jobstart(\"]] .. filepath .. [[\", { term = true });' -c 'autocmd BufLeave * exit' "]])
         end
     else
         if general.isOnWindows() == true then
             command = "!start cmd /k " .. filepath
         elseif cpp_opts.terminal == "ghostty" then
-            command = terminalCommands[cpp_opts.backupTerminal].begin .. filepath .. terminalCommands[cpp_opts.backupTerminal].ending .. ";exec bash'"
+            command = terminalCommands[cpp_opts.backupTerminal].begin .. filepath .. terminalCommands[cpp_opts.backupTerminal].permanentEnding
         else
-            command = terminalCommands[cpp_opts.terminal].begin .. filepath .. terminalCommands[cpp_opts.terminal].ending .. ";exec bash'"
+            command = terminalCommands[cpp_opts.terminal].begin .. filepath .. terminalCommands[cpp_opts.terminal].permanentEnding
         end
     end
 
