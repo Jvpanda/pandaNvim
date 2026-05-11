@@ -2,7 +2,8 @@ local cpp_opts = {
     buildType = "Release",
     runWindow = "external",
     vimFloatingWindowSize = { heightRatio = 0.45, widthRatio = 0.25, col = 1, row = 0 },
-    debugRunStart = "run",
+    debugRunStart = "Run",
+    debugger = "GDB",
     terminal = nil,
     backupTerminal = nil,
     compileFlags = "", --need to implement

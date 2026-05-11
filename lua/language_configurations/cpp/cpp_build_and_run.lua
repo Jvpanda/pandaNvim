@@ -1,8 +1,10 @@
-local M = {}
+local API = {}
+
 local general = require "tools.general_functions"
 local cpp_opts = require "language_configurations.cpp.cpp_opts"
 local workspace = require "tools.workspace_tracker"
-local raddbg = require "language_configurations.cpp.raddbg"
+local raddbg = require "language_configurations.cpp.debug.raddbg"
+local cppGeneral = require "language_configurations.cpp.cpp_general"
 
 -- [[ Editor Environment Setup]]
 local generate_environment_file = function(fileName)
@@ -14,11 +16,7 @@ local generate_environment_file = function(fileName)
     general.copy_file(source, destination)
 end
 
-M.create_or_switch_symlinks = function()
-    if workspace.isWorkspaceSet() == false then
-        return
-    end
-
+API.create_or_switch_symlinks = function()
     if general.isOnWindows() then
         if vim.fn.filereadable(workspace.getWorkspace() .. "/build/compile_commands.json") == 1 then
             Await_System({ "del", workspace.getWindowsWorkspace() .. "build\\compile_commands.json" }, {})
@@ -40,86 +38,40 @@ M.create_or_switch_symlinks = function()
     end
 end
 
-M.cmake_generate_ninja_files = function()
-    if workspace.isWorkspaceSet() == false then
-        vim.notify "Please set a home directory"
-        return
-    end
-
+local cmake_generate_build = function()
     generate_environment_file ".editorconfig"
     generate_environment_file ".clang-format"
     generate_environment_file "CMakeUserPresets.json"
     generate_environment_file "CMakeLists.txt"
     generate_environment_file ".gitignore"
 
-    print("Generating Build Files for " .. cpp_opts.buildType)
     local result = Await_System {
         "cmake",
         "--preset",
         cpp_opts.buildType,
     }
-    local oldCommandHeight = vim.o.cmdheight
-    vim.o.cmdheight = 20
-    vim.notify("----\n" .. result .. "----")
-    vim.o.cmdheight = oldCommandHeight
-    M.create_or_switch_symlinks()
+    API.create_or_switch_symlinks()
+    return "----------\n" + result + "----------\n"
 end
 
 -- [[Compiling and running]]
-M.cmake_compile = function()
-    if workspace.isWorkspaceSet() == false then
-        return "Please set a home directory"
-    end
-
-    if vim.fn.isdirectory("build/" .. cpp_opts.buildType) == 0 then
-        M.cmake_generate_ninja_files()
-    end
-
+local cmake_compile = function()
     vim.cmd.wa()
     print("Compiling... with build type " .. cpp_opts.buildType)
+
     local result = Await_System({ "cmake", "--build", "--preset", cpp_opts.buildType }, {})
-    return result
-end
+    local prettyResult = "-------\n" .. result .. "-------\n"
 
-M.run_cpp = function()
-    if workspace.isWorkspaceSet() == false then
-        vim.notify "Please set a home directory"
-        return
-    end
-
-    local filepath = workspace.getWorkspace() .. "build/" .. cpp_opts.buildType .. "/execBinary"
-    if general.isOnWindows() then
-        filepath = filepath .. ".exe"
-    end
-
-    if cpp_opts.buildType == "Debug" and cpp_opts.debugRunStart ~= "No raddbg" and general.isOnWindows() == true then
-        raddbg.runRadDbg(filepath, { run = cpp_opts.debugRunStart })
-        return
-    elseif cpp_opts.buildType == "Debug" then
-        print "No Debug Support yet"
-    end
-
-    M.create_terminal_from_type(filepath)
-end
-
-M.create_terminal_from_type = function(filepath)
-    if cpp_opts.runWindow == "floatingWindow" then
-        local buf, win = general.create_floating_window(cpp_opts.vimFloatingWindowSize)
-        vim.api.nvim_set_current_win(win)
-        local jobid = vim.fn.jobstart(filepath, { term = true })
-        general.setDelWinKeymapForBuffer()
-    elseif cpp_opts.runWindow == "window" then
-        vim.cmd "vsplit"
-        vim.cmd.terminal(filepath)
-        general.setDelWinKeymapForBuffer()
-    elseif cpp_opts.runWindow == "external" then
-        M.create_terminal_instance(filepath, false)
-    elseif cpp_opts.runWindow == "external_permanent" then
-        M.create_terminal_instance(filepath, true)
+    if string.find(prettyResult, "error") ~= nil then
+        return false, "----------\nCOMPILATION ERROR\n----------\n" + result + "----------\nCOMPILATION ERROR\n----------\n"
+    elseif string.find(prettyResult, "warning") ~= nil then
+        return true, "----------\nCOMPILATION WARNING\n----------\n" + result + "----------\nCOMPILATION WARNING\n----------\n"
+    else
+        return true, prettyResult
     end
 end
 
-M.create_terminal_instance = function(filepath, permanent)
+local create_terminal_instance = function(filepath, permanent)
     local terminalCommands = {
         gnome = {
             begin = [[gnome-terminal -- bash -ic ']],
@@ -147,7 +99,6 @@ M.create_terminal_instance = function(filepath, permanent)
             command = terminalCommands[cpp_opts.backupTerminal].begin .. filepath .. terminalCommands[cpp_opts.backupTerminal].ending
         else
             command = terminalCommands[cpp_opts.terminal].begin .. filepath .. terminalCommands[cpp_opts.terminal].ending
-            -- vim.cmd([[!gnome-terminal -- bash -c "nvim -c 'lua vim.fn.jobstart(\"]] .. filepath .. [[\", { term = true });' -c 'autocmd BufLeave * exit' "]])
         end
     else
         if general.isOnWindows() == true then
@@ -162,37 +113,68 @@ M.create_terminal_instance = function(filepath, permanent)
     vim.fn.system(command)
 end
 
-M.KeybindCompile = function()
-    if workspace.isWorkspaceSet() == false then
-        vim.notify "Please set a home directory"
-        return
+local create_terminal_from_type = function(filepath)
+    if cpp_opts.runWindow == "floatingWindow" then
+        local buf, win = general.create_floating_window(cpp_opts.vimFloatingWindowSize)
+        vim.api.nvim_set_current_win(win)
+        local jobid = vim.fn.jobstart(filepath, { term = true })
+        general.setDelWinKeymapForBuffer()
+    elseif cpp_opts.runWindow == "window" then
+        vim.cmd "vsplit"
+        vim.cmd.terminal(filepath)
+        general.setDelWinKeymapForBuffer()
+    elseif cpp_opts.runWindow == "external" then
+        create_terminal_instance(filepath, false)
+    elseif cpp_opts.runWindow == "external_permanent" then
+        create_terminal_instance(filepath, true)
     end
-
-    local compilationResult = "-------\n" .. M.cmake_compile() .. "-------\n"
-    vim.notify(compilationResult)
 end
 
-M.compile_and_run = function()
-    if workspace.isWorkspaceSet() == false then
-        vim.notify "Please set a home directory"
-        return
+local run_cpp = function()
+    local filepath = cppGeneral.getExecutablePath()
+
+    if cpp_opts.buildType == "Debug" then
+        if cpp_opts.debugger == "Raddbg" then
+            raddbg.runRadDbg(filepath, { run = cpp_opts.debugRunStart })
+            return
+        elseif cpp_opts.debugger == "GDB" then
+            require("dap").continue()
+            require("dap-view").open()
+            return
+        end
+    else
+        create_terminal_from_type(filepath)
+    end
+end
+
+--[[ API FOR KEYBINDS]]
+API.build = function()
+    print("Generating Build Files for " .. cpp_opts.buildType)
+    cppGeneral.naPrint(cmake_generate_build())
+end
+
+API.compile = function()
+    if vim.fn.isdirectory("build/" .. cpp_opts.buildType) == 0 then
+        API.build()
     end
 
-    local compilationResult = "-------\n" .. M.cmake_compile() .. "-------\n"
+    local isCompiled, result = cmake_compile()
+    cppGeneral.naPrint(result)
+end
 
-    if
-        string.find(compilationResult, "error") == nil
-        and string.find(compilationResult, "warning") == nil
-        and compilationResult ~= "Please set a home directory"
-    then
-        local oldCommandHeight = vim.o.cmdheight
-        vim.o.cmdheight = 20
-        print(compilationResult)
-        vim.o.cmdheight = oldCommandHeight
-        M.run_cpp()
+API.run = function()
+    run_cpp()
+end
+
+API.compile_and_run = function()
+    local isCompiled, compilationResult = cmake_compile()
+
+    if isCompiled then
+        cppGeneral.naPrint(compilationResult)
+        run_cpp()
     else
         vim.notify(compilationResult)
     end
 end
 
-return M
+return API
