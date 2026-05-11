@@ -85,14 +85,6 @@ return {
             vim.keymap.set("n", "<leader>sn", function()
                 builtin.find_files { cwd = vim.fn.stdpath "config" }
             end, { desc = "[S]earch [N]eovim files" })
-            -- Shortcut to the currect directories files
-            vim.keymap.set("n", "<leader>scd", function()
-                builtin.find_files { cwd = vim.fn.expand "%:p:h" }
-            end, { desc = "[S]earch [C]urrent [D]irectory files" })
-            -- shortcut to my source files
-            vim.keymap.set("n", "<leader>scs", function()
-                builtin.find_files { cwd = "~/Source" }
-            end, { desc = "[S]earch [C]urrent [S]ource files" })
         end,
     },
 }

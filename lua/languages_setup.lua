@@ -19,6 +19,9 @@ python_setup.LSPSetup()
 lua_setup.LSPSetup()
 rust_setup.LSPSetup()
 
+--[[Configure DAP's]]
+local cpp_dap = require "language_configurations.cpp.debug.dapSettings"
+
 -- [[ Basic Autocommands ]]
 local myAutogroup = vim.api.nvim_create_augroup("LSPKeybindAutogroup", { clear = true })
 
@@ -29,7 +32,7 @@ vim.api.nvim_create_autocmd("BufEnter", {
     pattern = "*",
     callback = function()
         local filetype = vim.bo.filetype
-        if filetype == "cpp" or filetype == "h" then
+        if filetype == "cpp" or filetype == "cmake" then
             cpp_keybinds.setup_keybinds()
         elseif filetype == "gdscript" then
             gdscript_setup.setupKeybinds()

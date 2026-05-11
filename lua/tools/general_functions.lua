@@ -9,6 +9,13 @@ funcs.isOnWindows = function()
     end
 end
 
+funcs.get_buf_data = function()
+    local currentBufNumber = vim.api.nvim_get_current_buf()
+    local currentBufName = vim.api.nvim_buf_get_name(0):gsub("\\", "/")
+    local currentLN = vim.api.nvim_win_get_cursor(0)
+    return { name = currentBufName, number = currentBufNumber, row = currentLN[1], col = currentLN[2] }
+end
+
 -- A system agnostic file copy
 ---@param source string Unix Based Path
 ---@param destination string Unix Based Path

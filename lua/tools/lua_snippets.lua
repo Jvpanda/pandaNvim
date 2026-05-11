@@ -17,7 +17,7 @@ local show_if_empty_line = function(lineUntilCursor)
 end
 local types = require "luasnip.util.types"
 ls.config.set_config {
-    history = true,
+    history = false,
     updateevents = "TextChanged,TextChangedI",
     enable_autosnippets = true,
     ext_opts = {
