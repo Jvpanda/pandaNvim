@@ -60,13 +60,15 @@ local cmake_compile = function()
     print("Compiling... with build type " .. cpp_opts.buildType)
 
     local result = Await_System({ "cmake", "--build", "--preset", cpp_opts.buildType }, {})
-    local prettyResult = "-------\n" .. result .. "-------\n"
 
-    if string.find(prettyResult, "error") ~= nil then
-        return false, "----------\nCOMPILATION ERROR\n----------\n" + result + "----------\nCOMPILATION ERROR\n----------\n"
-    elseif string.find(prettyResult, "warning") ~= nil then
-        return true, "----------\nCOMPILATION WARNING\n----------\n" + result + "----------\nCOMPILATION WARNING\n----------\n"
+    if string.find(result, "error") ~= nil then
+        local str = ("----------\nCOMPILATION ERROR\n----------\n" .. result .. "----------\nCOMPILATION ERROR\n----------\n")
+        return false, str
+    elseif string.find(result, "warning") ~= nil then
+        local str = "----------\nCOMPILATION WARNING\n----------\n" .. result .. "----------\nCOMPILATION WARNING\n----------\n"
+        return true, str
     else
+        local prettyResult = "-------\n" .. result .. "-------\n"
         return true, prettyResult
     end
 end
