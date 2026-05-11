@@ -25,49 +25,52 @@ vim.keymap.set("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus to the right win
 vim.keymap.set("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus to the lower window" })
 vim.keymap.set("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus to the upper window" })
 
--- [[ Simple Custom Keybinds]]
--- development
+-- Neovim development
 vim.keymap.set("n", "<leader>x", ":w<CR>:source %<CR>", { noremap = true, desc = "Saves then runs current file" })
-
---Open explorer on the current directory
-vim.keymap.set("n", "<leader>pa", function()
-    local filepath = vim.fn.expand "%:p:h"
-    if general.isOnWindows() then
-        vim.fn.system("start " .. filepath)
-    else
-        vim.fn.system("nemo " .. filepath)
-    end
-end, { desc = "Open Current Window in Explorer" })
 
 -- Open parent directory in floating window
 vim.keymap.set("n", "-", require("oil").toggle_float)
-vim.keymap.set("n", "<leader>ps", function()
-    require("oil").toggle_float "~/Source/"
-end, { desc = "Open Source Dir" })
 
--- [[Set current window to half the width of the screen]]
-vim.keymap.set("n", "<leader>po", function()
-    local width = math.floor(vim.o.columns * 0.5)
-    vim.api.nvim_win_set_width(0, width)
-end, { desc = "Set current window to half the editor width" })
+local setupPersonalKeybinds = function()
+    --Open explorer on the current directory
+    vim.keymap.set("n", "<leader>pa", function()
+        local filepath = vim.fn.expand "%:p:h"
+        if general.isOnWindows() then
+            vim.fn.system("start " .. filepath)
+        else
+            if vim.fn.executable "nemo" then
+                vim.fn.jobstart({ "xdg-open", vim.fn.expand "%:p:h" }, {
+                    detach = true,
+                })
+            end
+        end
+    end, { desc = "Open Current Window in Explorer" })
 
---Getting and clearing messages
-vim.keymap.set("n", "<leader>pm", ":messages<CR>", { desc = "See messages" })
-vim.keymap.set("n", "<leader>pn", function()
-    vim.cmd.messages "clear"
-end, { desc = "Clear messages" })
+    vim.keymap.set("n", "<leader>ps", function()
+        require("oil").toggle_float "~/Source/"
+    end, { desc = "Open Source Dir" })
 
--- Inspect what's under the cursor
-vim.keymap.set("n", "<leader>i", vim.show_pos, { desc = "Inspect whatever is under the cursor" })
+    -- [[Set current window to half the width of the screen]]
+    vim.keymap.set("n", "<leader>po", function()
+        local width = math.floor(vim.o.columns * 0.5)
+        vim.api.nvim_win_set_width(0, width)
+    end, { desc = "Set current window to half the editor width" })
 
--- Comment out a whole block cpp
-vim.keymap.set("n", "<leader>pc", "[{O/*<c-[>j%o*/<c-[>", { desc = "Comment out a whole block cpp" })
--- Uncomment out a whole block cpp
-vim.keymap.set("n", "<leader>pu", "[{kdd%jdd<c-[>", { desc = "Uncomment out a whole block cpp" })
+    --Getting and clearing messages
+    vim.keymap.set("n", "<leader>pm", ":messages<CR>", { desc = "See messages" })
+    vim.keymap.set("n", "<leader>pn", function()
+        vim.cmd.messages "clear"
+    end, { desc = "Clear messages" })
 
--- Change external cwd
-vim.keymap.set("n", "<leader>pd", function()
-    local filepath = vim.fn.expand "%:p:h"
-    vim.fn.chdir(filepath)
-    print("CD'd to " .. filepath)
-end, { desc = "Change external and internal cwd to current files dir" })
+    -- Inspect what's under the cursor
+    vim.keymap.set("n", "<leader>pi", vim.show_pos, { desc = "Inspect whatever is under the cursor" })
+
+    -- Change external cwd
+    vim.keymap.set("n", "<leader>pd", function()
+        local filepath = vim.fn.expand "%:p:h"
+        vim.fn.chdir(filepath)
+        print("CD'd to " .. filepath)
+    end, { desc = "Change external and internal cwd to current files dir" })
+end
+
+setupPersonalKeybinds()
