@@ -3,8 +3,9 @@ local general = require "tools.general_functions"
 local workspace_tracker = {}
 local workspaceDirectory = "unset"
 local markers = {
-    cpp = { files = {}, folders = { "src", "git", "build" } },
-    cmake = { files = {}, folders = { "src", "git", "build" } },
+    c = { files = { "CMakeLists.txt" }, folders = { "src", ".git", "build" } },
+    cpp = { files = { "CMakeLists.txt" }, folders = { "src", ".git", "build" } },
+    cmake = { files = { "CMakeLists.txt" }, folders = { "src", ".git", "build" } },
     gdscript = { files = { "project.godot" }, folders = {} },
 }
 
@@ -116,6 +117,9 @@ vim.keymap.set("n", "<F1>", function()
         return
     end
     workspace_tracker.setWorkspace(markers[ft].files, markers[ft].folders)
+    if vim.bo.ft == "c" or vim.bo.ft == "cpp" or vim.bo.ft == "cmake" then
+        require("language_configurations.cppAndC.keybinds").setup_keybinds()
+    end
 end)
 
 return workspace_tracker

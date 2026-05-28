@@ -1,5 +1,5 @@
 local buffer_selector = require "tools.buffer_selector"
-local cpp_opts = require "language_configurations.cpp.cpp_opts"
+local cpp_opts = require "language_configurations.cppAndC.general_opts"
 local env = require "tools.environment_setup"
 local general = require "tools.general_functions"
 

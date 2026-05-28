@@ -1,4 +1,5 @@
-local cpp_opts = {
+local opts = {
+    configuration = "Normal", -- Dictates what type of project to setup for
     buildType = "Release",
     runWindow = "external",
     vimFloatingWindowSize = { heightRatio = 0.45, widthRatio = 0.25, col = 1, row = 0 },
@@ -11,4 +12,4 @@ local cpp_opts = {
     workspaceModifier = "", --need to implement
 }
 
-return cpp_opts
+return opts

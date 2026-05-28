@@ -12,7 +12,7 @@ return {
         workspaces = {
             {
                 name = "school",
-                path = "/home/jacominto/Documents/Obsidian/School",
+                path = "/home/jacominto/Nextcloud/Obsidian/Personal/",
             },
         },
     },

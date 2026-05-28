@@ -31,6 +31,11 @@ vim.keymap.set("n", "<leader>x", ":w<CR>:source %<CR>", { noremap = true, desc =
 -- Open parent directory in floating window
 vim.keymap.set("n", "-", require("oil").toggle_float)
 
+-- Restricting the use of these keys without setting a workspace
+for i = 5, 12, 1 do
+    vim.keymap.set("n", "<F" .. i .. ">", '<cmd>echo "Please set a workspace to use F' .. i .. '"<CR>')
+end
+
 local setupPersonalKeybinds = function()
     --Open explorer on the current directory
     vim.keymap.set("n", "<leader>pa", function()

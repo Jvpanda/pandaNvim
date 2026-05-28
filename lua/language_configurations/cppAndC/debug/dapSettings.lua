@@ -1,6 +1,6 @@
 local dap = require "dap"
-local opts = require "language_configurations.cpp.cpp_opts"
-local cppGeneral = require "language_configurations.cpp.cpp_general"
+local opts = require "language_configurations.cppAndC.general_opts"
+local cppGeneral = require "language_configurations.cppAndC.cppAndC_general"
 
 dap.adapters.gdb = {
     type = "executable",
@@ -13,7 +13,7 @@ dap.configurations.cpp = {
         name = "Launch",
         type = "gdb",
         request = "launch",
-        program = cppGeneral.getExecutablePath,
+        program = cppGeneral.get_executable_path,
         args = {}, -- provide arguments if needed
         cwd = "${workspaceFolder}",
         stopAtBeginningOfMainSubprogram = function()
@@ -37,6 +37,7 @@ dap.configurations.cpp = {
         end,
         cwd = "${workspaceFolder}",
     },
+
     {
         name = "Attach to gdbserver :1234",
         type = "gdb",

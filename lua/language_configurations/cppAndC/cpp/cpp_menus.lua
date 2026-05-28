@@ -1,7 +1,8 @@
-local cpp_opts = require "language_configurations.cpp.cpp_opts"
-local cpp_quick = require "language_configurations.cpp.cpp_quick_interact"
+local opts = require "language_configurations.cppAndC.general_opts"
+local cpp_quick = require "language_configurations.cppAndC.cpp.cpp_quick_interact"
 local general = require "tools.general_functions"
-local build = require "language_configurations.cpp.cpp_build_and_run"
+local build = require "language_configurations.cppAndC.cpp.cpp_build_and_run"
+local cpp_general = require "language_configurations.cppAndC.cppAndC_general"
 
 -- [[ CUSTOM MENU CALLBACKS HANDLERS]]
 local mainMenuCallbacks = {}
@@ -12,7 +13,7 @@ end
 
 local function handle_window_type_menu(windowType)
     print("Switched To " .. windowType)
-    cpp_opts.runWindow = windowType
+    opts.runWindow = windowType
 end
 
 local handle_cmake_menu = function(option)
@@ -30,14 +31,19 @@ end
 
 mainMenuCallbacks["Switch To Release"] = function()
     print "Switched To Release"
-    cpp_opts.buildType = "Release"
-    Async(build.create_or_switch_symlinks)
+    opts.buildType = "Release"
+    Async(cpp_general.create_or_switch_symlinks)
 end
 
 mainMenuCallbacks["Switch To Debug"] = function()
     print "Switched To Debug"
-    cpp_opts.buildType = "Debug"
-    Async(build.create_or_switch_symlinks)
+    opts.buildType = "Debug"
+    Async(cpp_general.create_or_switch_symlinks)
+end
+
+mainMenuCallbacks["Switch to Embedded"] = function()
+    print "Switched To Embedded"
+    opts.configuration = "Embedded"
 end
 
 mainMenuCallbacks["Cmake"] = function()
@@ -49,8 +55,8 @@ mainMenuCallbacks["Quick Action"] = function() end
 -- [[ Main interface api ]]
 local M = {}
 M.call_menu = function()
-    if cpp_opts.buildType == "Debug" then
-        general.customOptionsMenu({ "Quick Action", "Cmake", "Switch To Release" }, { rowCount = 4, widthRatio = 0.15 }, handle_main_menu)
+    if opts.buildType == "Debug" then
+        general.customOptionsMenu({ "Quick Action", "Cmake", "Switch To Release", "Switch to Embedded" }, { rowCount = 4, widthRatio = 0.15 }, handle_main_menu)
     else
         general.customOptionsMenu({ "Quick Action", "Cmake", "Release Run Options", "Switch To Debug" }, { rowCount = 4, widthRatio = 0.15 }, handle_main_menu)
     end

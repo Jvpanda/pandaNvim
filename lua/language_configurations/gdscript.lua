@@ -1,6 +1,13 @@
 local gdscript_setup = {}
 local workspace_tracker = require "tools.workspace_tracker"
 local general = require "tools.general_functions"
+local dap = require "dap"
+
+dap.adapters.godot = {
+    type = "server",
+    host = "127.0.0.1",
+    port = 6006,
+}
 
 gdscript_setup.LSPSetup = function()
     vim.lsp.enable "gdscript"
@@ -12,6 +19,34 @@ gdscript_setup.LSPSetup = function()
         root_markers = { "project.godot", ".git" },
     })
 end
+
+dap.configurations.gdscript = {
+    {
+        name = "Launch Main scene",
+        type = "godot",
+        request = "launch",
+        project = "${workspaceFolder}",
+        scene = "main",
+    },
+
+    {
+        name = "Launch Current scene",
+        type = "godot",
+        request = "launch",
+        project = "${workspaceFolder}",
+        scene = "current",
+    },
+
+    {
+        name = "Launch Script scene",
+        type = "godot",
+        request = "launch",
+        project = "${workspaceFolder}",
+        scene = function()
+            return vim.fn.expand "%:p:r" .. ".tscn"
+        end,
+    },
+}
 
 -- Starts the godot server listener
 gdscript_setup.startListenServerForFileJumps = function()
@@ -28,30 +63,12 @@ gdscript_setup.startListenServerForFileJumps = function()
 end
 
 gdscript_setup.setupKeybinds = function()
-    vim.keymap.set("n", "<F11>", function()
-        if workspace_tracker.isWorkspaceSet() then
-            local arguments = workspace_tracker.relativeWorkspacePath() .. vim.fn.expand "%:t:r" .. ".tscn"
-            local command = [[!gnome-terminal -- bash -c "godot ]] .. arguments .. [[; read -p 'Press Enter to close...' "]]
-            if general.isOnWindows() then
-                command = "!start godot " .. arguments
-            end
-            vim.cmd(command)
-            print "launched"
-        else
-            print "Please set home first"
-        end
-    end, { desc = "Launches Current Scene" })
+    require("language_configurations.cppAndC.keybinds").setupDapKeybinds()
+    require("language_configurations.cppAndC.debug.debugMenu").cppSetupDapMenu()
     vim.keymap.set("n", "<F12>", function()
-        if workspace_tracker.isWorkspaceSet() then
-            local command = [[!gnome-terminal -- bash -c "godot; read -p 'Press Enter to close...' "]]
-            if general.isOnWindows() then
-                command = "!start godot "
-            end
-            vim.cmd(command)
-        else
-            print "Please set home first"
-        end
-    end, { desc = "Launces Main Scene" })
+        dap.continue()
+        require("dap-view").open()
+    end)
 end
 
 return gdscript_setup

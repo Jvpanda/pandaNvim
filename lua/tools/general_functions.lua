@@ -29,6 +29,18 @@ funcs.copy_file = function(source, destination)
     end
 end
 
+-- Copies files from the specified folder to the cwd
+funcs.generate_environment_file = function(fileName)
+    local destination = vim.fn.getcwd()
+    if vim.fn.filereadable(destination) == 1 then
+        return
+    end
+
+    local source = vim.fn.fnamemodify(vim.fn.expand "$MYVIMRC", ":h") .. "/lua/tools/" .. fileName
+    funcs.copy_file(source, destination)
+end
+
+-- Window
 function funcs.create_floating_window(opts)
     opts = opts or {}
 

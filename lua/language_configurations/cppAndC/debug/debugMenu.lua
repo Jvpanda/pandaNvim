@@ -1,7 +1,7 @@
 local general = require "tools.general_functions"
 local dap = require "dap"
 local dapView = require "dap-view"
-local cppOpts = require "language_configurations.cpp.cpp_opts"
+local opts = require "language_configurations.cppAndC.general_opts"
 
 local Api = {}
 
@@ -32,14 +32,19 @@ end
 local function handle_dap_menu(option)
     if option == "Toggle Dap View" then
         dapView.toggle()
+    elseif option == "Terminate" then
+        dap.terminate()
+        dapView.close()
+    elseif option == "Pause Thread" then
+        dap.pause()
     elseif option == "Toggle Virtual Text" then
         dapView.virtual_text_toggle()
     elseif option == "Clear Breakpoints" then
         dap.clear_breakpoints()
     elseif option == "Breakpoint At Start" then
-        cppOpts.debugRunStart = "Stop"
+        opts.debugRunStart = "Stop"
     elseif option == "Run Past Start" then
-        cppOpts.debugRunStart = "Run"
+        opts.debugRunStart = "Run"
     elseif option == "Run Last Dap" then
         dap.run_last()
     elseif option == "Open REPL" then
@@ -54,9 +59,11 @@ x["Stop"] = "Run Past Start"
 local dap_debug_menu = function()
     general.customOptionsMenu({
         "Toggle Dap View",
+        "Terminate",
+        "Pause Thread",
         "Toggle Virtual Text",
         "Clear Breakpoints",
-        x[cppOpts.debugRunStart],
+        x[opts.debugRunStart],
         "Run Last Dap",
         "Open REPL",
     }, { rowCount = 8, widthRatio = 0.2 }, handle_dap_menu)
