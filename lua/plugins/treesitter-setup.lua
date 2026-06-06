@@ -20,7 +20,7 @@ return {
                     enable = true,
                     additional_vim_regex_highlighting = { "ruby" },
                 },
-                indent = { enable = true, disable = { "ruby", "cpp", "c" } },
+                indent = { enable = true, disable = { "ruby", "cpp", "c", "markdown", "markdown_inline" } },
             }
         end,
     },

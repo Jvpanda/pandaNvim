@@ -12,7 +12,7 @@ return {
         workspaces = {
             {
                 name = "school",
-                path = "/home/jacominto/Nextcloud/Obsidian/Personal/",
+                path = vim.fn.expand "~/Nextcloud/DesktopSource/embedded/",
             },
         },
     },
