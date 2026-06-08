@@ -32,11 +32,11 @@ end
 -- Copies files from the specified folder to the cwd
 funcs.generate_environment_file = function(fileName)
     local destination = vim.fn.getcwd()
-    if vim.fn.filereadable(destination) == 1 then
+    if vim.fn.filereadable(vim.fn.fnamemodify(fileName, ":t")) == 1 then
         return
     end
 
-    local source = vim.fn.fnamemodify(vim.fn.expand "$MYVIMRC", ":h") .. "/lua/tools/" .. fileName
+    local source = vim.fn.fnamemodify(vim.fn.expand "$MYVIMRC", ":h") .. "/lua/tools/environment_files/" .. fileName
     funcs.copy_file(source, destination)
 end
 
