@@ -122,4 +122,12 @@ vim.keymap.set("n", "<F1>", function()
     end
 end)
 
+vim.api.nvim_create_user_command("SetWorkspace", function()
+    local ft = vim.bo.ft
+    workspace_tracker.setWorkspace(markers[ft].files, markers[ft].folders)
+    if vim.bo.ft == "c" or vim.bo.ft == "cpp" or vim.bo.ft == "cmake" then
+        require("language_configurations.cppAndC.keybinds").setup_keybinds()
+    end
+end, {})
+
 return workspace_tracker

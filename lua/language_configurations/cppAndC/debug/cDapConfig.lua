@@ -44,6 +44,21 @@ dap.listeners.after["terminate"]["thing"] = function()
     end
 end
 
+local myAutogroup = vim.api.nvim_create_augroup("CustomExit", { clear = true })
+-- Decide which keybinds to use when entering buf
+vim.api.nvim_create_autocmd("ExitPre", {
+    desc = "Kills OpenOCD On Exit",
+    group = myAutogroup,
+    pattern = "*",
+    callback = function()
+        if handle then
+            handle:kill "sigterm"
+            handle = nil
+            print "OpenOCD Server Terminated"
+        end
+    end,
+})
+
 dap.configurations.c = {
 
     {

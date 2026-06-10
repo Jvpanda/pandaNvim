@@ -1,6 +1,6 @@
 local opts = {
-    configuration = "Normal", -- Dictates what type of project to setup for
-    buildType = "Release",
+    configuration = "Embedded", -- Dictates what type of project to setup for
+    buildType = "Debug",
     runWindow = "external",
     vimFloatingWindowSize = { heightRatio = 0.45, widthRatio = 0.25, col = 1, row = 0 },
     debugRunStart = "Run",
