@@ -36,19 +36,14 @@ for i = 5, 12, 1 do
     vim.keymap.set("n", "<F" .. i .. ">", '<cmd>echo "Please set a workspace to use F' .. i .. '"<CR>')
 end
 
+vim.keymap.set("n", "<leader>pp", function()
+    vim.fn.setreg("+", vim.fn.expand "%:p")
+end)
+
 local setupPersonalKeybinds = function()
     --Open explorer on the current directory
     vim.keymap.set("n", "<leader>pa", function()
-        local filepath = vim.fn.expand "%:p:h"
-        if general.isOnWindows() then
-            vim.fn.system("start " .. filepath)
-        else
-            if vim.fn.executable "nemo" then
-                vim.fn.jobstart({ "xdg-open", vim.fn.expand "%:p:h" }, {
-                    detach = true,
-                })
-            end
-        end
+        vim.ui.open(vim.fn.expand "%:p:h")
     end, { desc = "Open Current Window in Explorer" })
 
     vim.keymap.set("n", "<leader>ps", function()

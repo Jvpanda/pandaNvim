@@ -22,7 +22,7 @@ return {
                 -- `cond` is a condition used to determine whether this plugin should be
                 -- installed and loaded.
                 cond = function()
-                    return vim.fn.executable "make" == 1 or vim.fn.executable "cmake"
+                    return vim.fn.executable "make" == 1 or vim.fn.executable "cmake" == 1
                 end,
             },
             { "nvim-telescope/telescope-ui-select.nvim" },
