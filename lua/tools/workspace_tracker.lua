@@ -2,11 +2,14 @@ local general = require "tools.general_functions"
 
 local workspace_tracker = {}
 local workspaceDirectory = "unset"
+
+-- Every sub table is a list of markers. The order of the lists is order of importance
 local markers = {
-    c = { files = { "CMakeLists.txt" }, folders = { "src", ".git", "build" } },
-    cpp = { files = { "CMakeLists.txt" }, folders = { "src", ".git", "build" } },
-    cmake = { files = { "CMakeLists.txt" }, folders = { "src", ".git", "build" } },
-    gdscript = { files = { "project.godot" }, folders = {} },
+    c = { { ".clangd", ".clang-format", "build" }, { "CMakeLists.txt", ".git", "src" } },
+    cpp = { { ".clangd", ".clang-format", "build" }, { "CMakeLists.txt", ".git", "src" } },
+    cmake = { { ".clangd", ".clang-format", "build" }, { "CMakeLists.txt", ".git", "src" } },
+    gdscript = { { "project.godot" } },
+    lua = { { ".stylua.tomssl" }, { "tests.txt" } },
 }
 
 workspace_tracker.isWorkspaceSet = function()
@@ -25,59 +28,51 @@ workspace_tracker.getWindowsWorkspace = function()
     return workspaceDirectory:gsub("/", "\\")
 end
 
-function workspace_tracker.relativeWorkspacePath()
-    local currentPath = vim.fn.expand "%:p:h"
-    if general.isOnWindows() then
-        currentPath = currentPath:gsub("\\", "/")
-    end
-    currentPath = currentPath:gsub(workspace_tracker.getWorkspace(), "")
-    currentPath = currentPath .. "/"
-    return currentPath
-end
+workspace_tracker.findWorkspaces = function(pMarkers)
+    local paths = {}
+    local i = 1
 
----@param files table Table of the names of the files to be searched for
----@return string workspaceDirectory
-local function findWorkspaceByReadableFile(files)
-    local currentDir = vim.fn.expand "%:p:h" .. "/"
-    local safety = 0
+    for _, markerTable in pairs(pMarkers) do
+        local path = vim.fn.expand "%"
+        local j = 1
+        paths[i] = {}
 
-    while currentDir ~= vim.fn.expand "~" .. "/" and safety < 30 do
-        for _, searchFile in pairs(files) do
-            -- print("Searching " .. currentDir) --debug
-            if vim.fn.filereadable(currentDir .. searchFile) == 1 then
-                -- print("Returning: " .. currentDir) -- debug
-                return currentDir
+        while path ~= nil do
+            path = vim.fn.fnamemodify(path, ":h")
+            path = vim.fs.root(path, markerTable)
+            if path ~= nil then
+                paths[i][j] = path
+                j = j + 1
             end
         end
-        currentDir = vim.fn.fnamemodify(currentDir, ":p:h:h") .. "/"
-        safety = safety + 1
+        i = i + 1
     end
 
-    return "unset"
+    if paths == {} then
+        paths = nil
+    end
+
+    return paths
 end
 
----@param directory table Table of the names of the directory's to be searched for
----@return string workspaceDirectory
-local function findWorkspaceByDirectory(directory)
-    local currentDir = vim.fn.expand "%:p:h" .. "/"
-    local safety = 0
+workspace_tracker.user_select_path = function(pathsTable)
+    local endPath = nil
 
-    while currentDir ~= vim.fn.expand "~" .. "/" and safety < 30 do
-        for _, searchDirectory in pairs(directory) do
-            if vim.fn.isdirectory(currentDir .. searchDirectory) == 1 then
-                return currentDir
-            end
+    for _, paths in pairs(pathsTable) do
+        if #paths == 0 then
+        elseif #paths == 1 then
+            endPath = paths[1]
+        else
+            endPath = general.customOptionsMenu(paths, { columnCharCount = 59, rowCount = #paths + 1 })
+            break
         end
-        currentDir = vim.fn.fnamemodify(currentDir, ":p:h:h") .. "/"
-        safety = safety + 1
     end
 
-    return "unset"
+    return endPath
 end
 
----@param fileMarkers? table Table of the names of the directory's to be searched for
----@param folderMarkers? table Table of the names of the directory's to be searched for
-workspace_tracker.setWorkspace = function(fileMarkers, folderMarkers)
+---@param pMarkers table
+workspace_tracker.setWorkspace = function(pMarkers)
     if workspace_tracker.isWorkspaceSet() == true then
         local input = vim.fn.input {
             default = "Y",
@@ -90,24 +85,27 @@ workspace_tracker.setWorkspace = function(fileMarkers, folderMarkers)
         end
     end
 
-    if fileMarkers ~= {} and fileMarkers ~= nil then
-        workspaceDirectory = findWorkspaceByReadableFile(fileMarkers)
+    local paths = workspace_tracker.findWorkspaces(pMarkers)
+
+    if paths == nil then
+        print "No roots found"
+        return
     end
-    if folderMarkers ~= {} and folderMarkers ~= nil and workspaceDirectory == "unset" then
-        workspaceDirectory = findWorkspaceByDirectory(folderMarkers)
+
+    local result = workspace_tracker.user_select_path(paths)
+    if result == nil then
+        print "Home not set"
+        return
     end
+
+    workspaceDirectory = result
 
     if general.isOnWindows() then
         workspaceDirectory = workspaceDirectory:gsub("\\", "/")
     end
 
-    if workspace_tracker.isWorkspaceSet() == true then
-        print("Home set to " .. workspaceDirectory)
-        vim.cmd.cd(workspaceDirectory)
-    else
-        print "Home could not be set"
-        print("Info: \n" .. workspaceDirectory)
-    end
+    print("Home set to " .. workspaceDirectory)
+    vim.fn.chdir(workspaceDirectory)
 end
 
 vim.keymap.set("n", "<F1>", function()
@@ -116,7 +114,7 @@ vim.keymap.set("n", "<F1>", function()
         vim.notify "Filetype not supported for workspaces"
         return
     end
-    workspace_tracker.setWorkspace(markers[ft].files, markers[ft].folders)
+    workspace_tracker.setWorkspace(markers[ft])
     if vim.bo.ft == "c" or vim.bo.ft == "cpp" or vim.bo.ft == "cmake" then
         require("language_configurations.cppAndC.keybinds").setup_keybinds()
     end
@@ -124,7 +122,7 @@ end)
 
 vim.api.nvim_create_user_command("SetWorkspace", function()
     local ft = vim.bo.ft
-    workspace_tracker.setWorkspace(markers[ft].files, markers[ft].folders)
+    workspace_tracker.setWorkspace(markers[ft])
     if vim.bo.ft == "c" or vim.bo.ft == "cpp" or vim.bo.ft == "cmake" then
         require("language_configurations.cppAndC.keybinds").setup_keybinds()
     end

@@ -1,4 +1,8 @@
 local funcs = {}
+local ns = vim.api.nvim_create_namespace "my_menu"
+vim.api.nvim_set_hl(0, "MyMenuSelected", {
+    link = "PmenuSel",
+})
 
 ---@return boolean
 funcs.isOnWindows = function()
@@ -16,28 +20,19 @@ funcs.get_buf_data = function()
     return { name = currentBufName, number = currentBufNumber, row = currentLN[1], col = currentLN[2] }
 end
 
--- A system agnostic file copy
----@param source string Unix Based Path
----@param destination string Unix Based Path
-funcs.copy_file = function(source, destination)
-    if funcs.isOnWindows() then
-        local windowsSource = source:gsub("/", "\\")
-        local windowsDestination = destination:gsub("/", "\\")
-        os.execute("COPY " .. windowsSource .. " " .. windowsDestination)
-    else
-        vim.system { "cp", source, destination }
-    end
-end
-
 -- Copies files from the specified folder to the cwd
 funcs.generate_environment_file = function(fileName)
-    local destination = vim.fn.getcwd()
+    local destination = vim.fn.getcwd() .. "/" .. vim.fn.fnamemodify(fileName, ":t")
     if vim.fn.filereadable(vim.fn.fnamemodify(fileName, ":t")) == 1 then
         return
     end
 
     local source = vim.fn.fnamemodify(vim.fn.expand "$MYVIMRC", ":h") .. "/lua/tools/environment_files/" .. fileName
-    funcs.copy_file(source, destination)
+    local success, err = vim.uv.fs_copyfile(source, destination)
+    if not success then
+        print("COPY ERROR: " .. err)
+        return
+    end
 end
 
 -- Window
@@ -111,36 +106,53 @@ function funcs.setDelWinKeymapForBuffer()
     end, { buffer = true })
 end
 
---Custom Option Selector
-funcs.customOptionsMenu = function(printedOptions, windowOpts, callbackFunction, ...)
-    callbackFunction = callbackFunction or nil
-    printedOptions = printedOptions or {}
-    windowOpts = windowOpts or {}
-    local passedArgs = ...
+local function render(buf, selected)
+    vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
+    vim.api.nvim_buf_set_extmark(buf, ns, selected - 1, 0, {
+        line_hl_group = "MyMenuSelected",
+        priority = 1000,
+    })
+end
 
-    funcs.create_floating_window(windowOpts)
-    vim.api.nvim_buf_set_lines(0, 0, -1, false, printedOptions)
+---@param buf any
+---@param win any
+function funcs.move_down_wrap_around(buf, win)
+    local coords = vim.api.nvim_win_get_cursor(win)
+    local bottomLine = vim.fn.line "$"
+    if coords[1] >= bottomLine then
+        vim.api.nvim_win_set_cursor(win, { 1, coords[2] })
+        render(buf, 1)
+    else
+        vim.api.nvim_win_set_cursor(win, { coords[1] + 1, coords[2] })
+        render(buf, coords[1] + 1)
+    end
+end
 
+---@param buf any
+---@param win any
+function funcs.move_up_wrap_around(buf, win)
+    local coords = vim.api.nvim_win_get_cursor(win)
+    local bottomLine = vim.fn.line "$"
+    if coords[1] == 1 then
+        vim.api.nvim_win_set_cursor(win, { bottomLine, coords[2] })
+        render(buf, bottomLine)
+    else
+        vim.api.nvim_win_set_cursor(win, { coords[1] - 1, coords[2] })
+        render(buf, coords[1] - 1)
+    end
+end
+
+function funcs.open_non_blocking_menu(buf, win, callbackFunction, passedArgs)
     funcs.setDelWinKeymapForBuffer()
+    render(buf, 1)
     vim.keymap.set("n", "j", function()
-        local coords = vim.api.nvim_win_get_cursor(0)
-        local bottomLine = vim.fn.line "$"
-        if coords[1] >= bottomLine then
-            vim.api.nvim_win_set_cursor(0, { 1, coords[2] })
-        else
-            vim.api.nvim_win_set_cursor(0, { coords[1] + 1, coords[2] })
-        end
+        funcs.move_down_wrap_around(buf, win)
     end, { buffer = true })
 
     vim.keymap.set("n", "k", function()
-        local coords = vim.api.nvim_win_get_cursor(0)
-        local bottomLine = vim.fn.line "$"
-        if coords[1] == 1 then
-            vim.api.nvim_win_set_cursor(0, { bottomLine, coords[2] })
-        else
-            vim.api.nvim_win_set_cursor(0, { coords[1] - 1, coords[2] })
-        end
+        funcs.move_up_wrap_around(buf, win)
     end, { buffer = true })
+
     if callbackFunction ~= nil then
         vim.keymap.set("n", "<CR>", function()
             local line = vim.fn.getline "."
@@ -156,14 +168,59 @@ funcs.customOptionsMenu = function(printedOptions, windowOpts, callbackFunction,
     end, { buffer = true })
 end
 
--- [[ Global Functions ]]
---Global Function to inspect tables
-P = function(v)
-    print "PRINTED:\n"
-    print(v)
-    print "INSPECTED:\n"
-    print(vim.inspect(v))
+function funcs.open_blocking_menu(buf, win)
+    local result = nil
+    render(buf, 1)
+    vim.cmd "redraw"
+    while vim.api.nvim_win_is_valid(win) do
+        local key = vim.fn.getchar()
+        if key == 106 then
+            funcs.move_down_wrap_around(buf, win)
+        elseif key == 107 then
+            funcs.move_up_wrap_around(buf, win)
+        elseif key == 13 then
+            result = vim.fn.getline "."
+            break
+        elseif key == 27 then
+            result = nil
+            break
+        end
+        vim.cmd "redraw"
+    end
+    if vim.api.nvim_win_is_valid(win) then
+        vim.api.nvim_win_close(win, true)
+    end
+
+    return result
 end
+
+--Custom Option Selector
+funcs.customOptionsMenu = function(printedOptions, windowOpts, callbackFunction, ...)
+    callbackFunction = callbackFunction or nil
+    printedOptions = printedOptions or {}
+    windowOpts = windowOpts or {}
+    local passedArgs = ...
+
+    local buf, win = funcs.create_floating_window(windowOpts)
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, printedOptions)
+
+    if callbackFunction == nil then
+        local result = funcs.open_blocking_menu(buf, win)
+        return result
+    else
+        funcs.open_non_blocking_menu(buf, win, callbackFunction, passedArgs)
+    end
+end
+
+-- not annoying Print
+funcs.naPrint = function(input)
+    local oldCommandHeight = vim.o.cmdheight
+    vim.o.cmdheight = 20
+    vim.print(input)
+    vim.o.cmdheight = oldCommandHeight
+end
+
+-- [[ Global Functions ]]
 
 -- Assing this
 DebugKey = function(keymap, func, ...)

@@ -8,6 +8,7 @@ local terminal_table = {
     "gnome",
     "xfce",
     "tmux",
+    "alacritty",
 }
 
 recursePPID = function(co, pid)
