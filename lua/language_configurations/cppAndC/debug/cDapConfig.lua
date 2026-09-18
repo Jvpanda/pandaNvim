@@ -18,7 +18,7 @@ dap.adapters.gdbstm = {
 -- Auto-start OpenOCD
 dap.listeners.before["initialize"]["thing2"] = function(session)
     if session.config.type == "gdbstm" then
-        handle = vim.loop.spawn("openocd", {
+        handle = vim.uv.spawn("openocd", {
             args = {
                 "-f",
                 "interface/stlink.cfg",

@@ -42,12 +42,4 @@ M.create_or_switch_symlinks = function()
     end
 end
 
--- not annoying Print
-M.naPrint = function(input)
-    local oldCommandHeight = vim.o.cmdheight
-    vim.o.cmdheight = 20
-    vim.print(input)
-    vim.o.cmdheight = oldCommandHeight
-end
-
 return M
