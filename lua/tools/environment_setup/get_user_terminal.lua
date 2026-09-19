@@ -4,7 +4,6 @@ local M = {}
 local recursePPID = function(co, pid) end
 
 local terminal_table = {
-    "ghostty",
     "gnome",
     "xfce",
     "tmux",
@@ -46,21 +45,24 @@ local getBackupTerminal = function()
         return "gnome"
     elseif vim.fn.executable "xfce4-terminal" then
         return "xfce"
+    elseif vim.fn.executable "alacritty" then
+        return "alacritty"
+    elseif vim.fn.executable "xterm" then
+        return "xterm"
     elseif vim.fn.executable "tmux" then
         return "tmux"
     end
 end
 
-M.getTerminalForCPP = function(cppOptsModule)
-    cppOptsModule = cppOptsModule or { terminal = "" }
-
+M.getTerminal = function(terminal_reference)
+    terminal_reference = terminal_reference or ""
     local co = coroutine.create(function()
         local initialPID = tostring(vim.fn.getpid())
         local result = coroutine.yield(function(co)
             recursePPID(co, initialPID)
         end)
-        cppOptsModule.terminal = result
-        cppOptsModule.backupTerminal = getBackupTerminal()
+        terminal_reference.terminal = result
+        terminal_reference.backup_terminal = getBackupTerminal()
     end)
 
     local ok, yielded = coroutine.resume(co)

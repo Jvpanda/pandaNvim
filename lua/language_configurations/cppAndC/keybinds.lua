@@ -3,7 +3,7 @@ local opts = require "language_configurations.cppAndC.general_opts"
 
 local conf = {}
 conf["Generic"] = require "language_configurations.cppAndC.cpp.cpp_generic_api"
-conf["Bare Metal Embedded"] = require "language_configurations.cppAndC.embedded_conf.c_embedded_build_and_run"
+conf["Bare Metal Embedded"] = require "language_configurations.cppAndC.embedded_conf.c_embedded_api"
 
 -- [[ALL KEYBINDS ]]
 function cpp_keybinds.setup_keybinds()

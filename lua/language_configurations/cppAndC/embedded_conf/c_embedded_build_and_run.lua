@@ -1,46 +1,53 @@
-local API = {}
-
-local general = require "tools.general_functions"
+local M = {}
 local opts = require "language_configurations.cppAndC.general_opts"
-local cppGeneral = require "language_configurations.cppAndC.cppAndC_general"
+local workspace = require "tools.workspace_tracker"
 
 -- [[ Editor Environment Setup]]
 
-local cmake_generate_build = function()
+M.cmake_generate_build = function()
     local result = Await_System {
         "cmake",
         "--preset",
         opts.buildType,
     }
-    cppGeneral.create_or_switch_symlinks()
+
+    -- Create symlink for compile commands
+    local source = workspace.getWorkspace() .. "/build/" .. opts.buildType .. "/compile_commands.json"
+    local destination = workspace.getWorkspace() .. "/build/compile_commands.json"
+    -- Error is expected here for non existing synlinks, it is fine
+    local success, err = vim.uv.fs_unlink(destination)
+
+    success, err = vim.uv.fs_symlink(source, destination)
+    if not success then
+        print("ERROR IN SYMLINK CREATION: " .. err)
+    end
+
     return "----------\n" .. result .. "----------\n"
 end
 
 -- [[Flashing and Bin]]
-local cmake_flash = function()
+M.cmake_flash = function()
     local result = Await_System {
         "cmake",
         "--build",
         "--preset",
         "flash",
     }
-    cppGeneral.create_or_switch_symlinks()
     return "----------\n" .. result .. "----------\n"
 end
 
-local cmake_bin = function()
+M.cmake_bin = function()
     local result = Await_System {
         "cmake",
         "--build",
         "--preset",
         "bin",
     }
-    cppGeneral.create_or_switch_symlinks()
     return "----------\n" .. result .. "----------\n"
 end
 
 -- [[Compiling and running]]
-local cmake_compile = function()
+M.cmake_compile = function()
     vim.cmd.wa()
 
     local result = Await_System({ "cmake", "--build", "--preset", opts.buildType }, {})
@@ -57,52 +64,8 @@ local cmake_compile = function()
     end
 end
 
-local run = function()
+M.run = function()
     require("dap-view").open()
     require("dap").continue()
 end
-
---[[ API FOR KEYBINDS]]
-
-API.build = function()
-    print("Generating Build Files for " .. opts.buildType)
-    cppGeneral.naPrint(cmake_generate_build())
-end
-
-API.compile = function()
-    if vim.fn.isdirectory("build/" .. opts.buildType) == 0 then
-        API.build()
-    end
-
-    local isCompiled, result = cmake_compile()
-    cppGeneral.naPrint(result)
-end
-
-API.flash = function()
-    print "Flashing Board..."
-    cppGeneral.naPrint(cmake_flash())
-end
-
-API.bin = function()
-    print "Creating Bin File..."
-    cppGeneral.naPrint(cmake_bin())
-end
-
-API.run = function()
-    run()
-end
-
--- This will also flash
-API.compile_and_run = function()
-    local isCompiled, compilationResult = cmake_compile()
-
-    if isCompiled then
-        cppGeneral.naPrint(compilationResult)
-        cmake_flash()
-        run()
-    else
-        vim.notify(compilationResult)
-    end
-end
-
-return API
+return M

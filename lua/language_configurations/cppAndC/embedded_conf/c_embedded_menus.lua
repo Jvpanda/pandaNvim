@@ -1,4 +1,4 @@
-local general = require "tools.general_functions"
+local menu = require "tools.ui.menuing"
 local build = require "language_configurations.cppAndC.embedded_conf.c_embedded_build_and_run"
 local options_menu = require "language_configurations.cppAndC.generic_config_menu"
 
@@ -26,7 +26,7 @@ end
 -- [[ Main interface api ]]
 local M = {}
 M.call_menu = function()
-    general.customOptionsMenu({ "Flash", "Bin", "Options" }, { rowCount = 4, widthRatio = 0.15 }, handle_main_menu)
+    menu.customOptionsMenu({ "Flash", "Bin", "Options" }, { heightOffset = 4, widthRatio = 0.15 }, handle_main_menu)
 end
 
 return M

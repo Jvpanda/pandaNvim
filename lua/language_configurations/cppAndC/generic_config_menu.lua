@@ -1,6 +1,6 @@
 local opts = require "language_configurations.cppAndC.general_opts"
 local general = require "tools.general_functions"
-local cpp_general = require "language_configurations.cppAndC.cppAndC_general"
+local menu = require "tools.ui.menuing"
 
 -- [[ CUSTOM MENU CALLBACKS HANDLERS]]
 local optionsMenuCallbacks = {}
@@ -58,7 +58,7 @@ optionsMenuCallbacks["Terminal Configuration"] = function()
         "Width Ratio: " .. opts.vimFloatingWindowSize.widthRatio,
     }
     show_currently_selected(terminal_conf, opts.runWindow)
-    general.customOptionsMenu(terminal_conf, { rowCount = #terminal_conf + 1, widthRatio = 0.2 }, handle_terminal_menu)
+    menu.customOptionsMenu(terminal_conf, { heightOffset = #terminal_conf + 1, widthRatio = 0.2 }, handle_terminal_menu)
 end
 
 -- [[ SUBSYSTEM MENU ]]
@@ -70,7 +70,7 @@ end
 optionsMenuCallbacks["Subsystem Type"] = function()
     local typeTable = { "Generic", "Bare Metal Embedded", "Zephyr", "ROS2" }
     show_currently_selected(typeTable, opts.configuration)
-    general.customOptionsMenu(typeTable, { rowCount = #typeTable + 1, widthRatio = 0.2 }, handle_subsystem_type_menu)
+    menu.customOptionsMenu(typeTable, { heightOffset = #typeTable + 1, widthRatio = 0.2 }, handle_subsystem_type_menu)
 end
 
 -- [[ BUILD OPTIONS ]]
@@ -101,7 +101,7 @@ end
 optionsMenuCallbacks["Build Options"] = function()
     local build_table = { "Debug", "Release", "Build Flags: " .. opts.buildFlags, "Compile Flags: " .. opts.compileFlags }
     show_currently_selected(build_table, opts.buildType)
-    general.customOptionsMenu(build_table, { rowCount = #build_table + 1, widthRatio = 0.2 }, handle_build_options_menu)
+    menu.customOptionsMenu(build_table, { heightOffset = #build_table + 1, widthRatio = 0.2 }, handle_build_options_menu)
 end
 
 -- [[ Main interface api ]]
@@ -112,7 +112,7 @@ M.call_options_menu = function()
     menu_options[2] = "Build Options"
     menu_options[3] = "Terminal Configuration"
 
-    general.customOptionsMenu(menu_options, { rowCount = 4, widthRatio = 0.15 }, handle_options_menu)
+    menu.customOptionsMenu(menu_options, { heightOffset = 4, widthRatio = 0.15 }, handle_options_menu)
 end
 
 return M

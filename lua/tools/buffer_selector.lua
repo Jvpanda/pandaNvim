@@ -1,5 +1,6 @@
 local M = {}
-local general = require "tools.general_functions"
+local window = require "tools.ui.windowing"
+local menu = require "tools.ui.menuing"
 
 BufferList = {}
 FavoriteBuffers = {}
@@ -133,7 +134,7 @@ local function setUIBufferUIKeymaps(contextBuffer)
         RecentBuffers[numConversion] = nil
 
         if contextBuffer == numConversion then
-            general.deleteCurrentWindow()
+            window.deleteCurrentWindow()
             vim.api.nvim_buf_delete(numConversion, {})
         else
             vim.api.nvim_buf_delete(numConversion, {})
@@ -215,9 +216,11 @@ local function create_buffer_menu()
             end
         end
     end
-    local windowOpts = { columnCharCount = winWidth + 7, rowCount = #menuTable + 3 }
 
-    general.customOptionsMenu(menuTable, windowOpts, selectBuffer)
+    ---@type FloatingWindowOpts
+    local windowOpts = { widthOffset = winWidth + 7, heightOffset = #menuTable + 3 }
+
+    menu.customOptionsMenu(menuTable, windowOpts, selectBuffer)
 
     vim.fn.cursor(1, 1)
 

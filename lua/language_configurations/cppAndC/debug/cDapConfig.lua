@@ -1,6 +1,6 @@
+local workspace = require "tools.workspace_tracker"
 local opts = require "language_configurations.cppAndC.general_opts"
 local dap = require "dap"
-local cppAndC_general = require "language_configurations.cppAndC.cppAndC_general"
 local handle
 
 -- Documentation that helped:
@@ -75,7 +75,10 @@ dap.configurations.c = {
             end
         end,
 
-        program = cppAndC_general.find_elf,
+        program = function()
+            local filepath = workspace.getWorkspace() .. "/build/" .. opts.buildType .. "/firmware.elf"
+            return filepath
+        end,
 
         cwd = "${workspaceFolder}",
     },

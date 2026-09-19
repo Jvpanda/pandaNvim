@@ -1,7 +1,7 @@
 local general = require "tools.general_functions"
 local opts = require "language_configurations.cppAndC.general_opts"
-local cppGeneral = require "language_configurations.cppAndC.cppAndC_general"
-local terminal = require "language_configurations.cppAndC.terminal_creation"
+local terminal = require "tools.environment_setup.terminal_api"
+local workspace = require "tools.workspace_tracker"
 
 local M = {}
 -- [[ Editor Environment Setup]]
@@ -17,7 +17,18 @@ M.cmake_generate_build = function()
         "--preset",
         opts.buildType,
     }
-    cppGeneral.create_or_switch_symlinks()
+
+    -- Create symlink for compile commands
+    local source = workspace.getWorkspace() .. "/build/" .. opts.buildType .. "/compile_commands.json"
+    local destination = workspace.getWorkspace() .. "/build/compile_commands.json"
+    -- Error is expected here for non existing synlinks, it is fine
+    local success, err = vim.uv.fs_unlink(destination)
+
+    success, err = vim.uv.fs_symlink(source, destination)
+    if not success then
+        print("ERROR IN SYMLINK CREATION: " .. err)
+    end
+
     return "----------\n" .. result .. "----------\n"
 end
 
@@ -41,7 +52,10 @@ M.cmake_compile = function()
 end
 
 M.run_cpp = function()
-    local filepath = cppGeneral.get_executable_path()
+    local filepath = workspace.getWorkspace() .. "/build/" .. opts.buildType .. "/execBinary"
+    if general.isOnWindows() then
+        filepath = filepath .. ".exe"
+    end
 
     if opts.buildType == "Debug" then
         if opts.debugger == "GDB" then
@@ -50,7 +64,7 @@ M.run_cpp = function()
             return
         end
     else
-        terminal.create_terminal_from_type(filepath)
+        terminal.run_command_on_terminal(filepath, opts.runWindow, opts.vimFloatingWindowSize)
     end
 end
 

@@ -1,15 +1,14 @@
 local buffer_selector = require "tools.buffer_selector"
-local cpp_opts = require "language_configurations.cppAndC.general_opts"
-local env = require "tools.environment_setup"
+local env = require "tools.environment_setup.terminal_api"
 local general = require "tools.general_functions"
 
 --[[Tools]]
 buffer_selector.setupBufferSelector()
 require "tools.lua_snippets"
 
---cpp Bootstrap
+--Terminal Bootstrap
 if general.isOnWindows() == false then
-    env.getTerminalForCPP(cpp_opts)
+    env.setup_terminal_env()
 end
 
 --[[My Commands]]
@@ -30,7 +29,7 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 vim.api.nvim_create_autocmd("InsertLeave", {
     desc = "Saves when leaving insert",
     group = myAutogroup,
-    pattern = { "*.txt", "*.py", "*.cpp", "*.h" },
+    pattern = { "*.txt", "*.py", "*.cpp", "*.h", "*.c" },
     callback = function()
         if vim.bo.modified then
             vim.cmd "silent write"

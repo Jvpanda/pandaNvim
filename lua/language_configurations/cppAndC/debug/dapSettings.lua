@@ -1,6 +1,7 @@
 local dap = require "dap"
 local opts = require "language_configurations.cppAndC.general_opts"
-local cppGeneral = require "language_configurations.cppAndC.cppAndC_general"
+local general = require "tools.general_functions"
+local workspace = require "tools.workspace_tracker"
 
 dap.adapters.gdb = {
     type = "executable",
@@ -13,7 +14,14 @@ dap.configurations.cpp = {
         name = "Launch",
         type = "gdb",
         request = "launch",
-        program = cppGeneral.get_executable_path,
+        program = function()
+            local filepath = workspace.getWorkspace() .. "/build/" .. opts.buildType .. "/execBinary"
+            if general.isOnWindows() then
+                filepath = filepath .. ".exe"
+            end
+            return filepath
+        end,
+
         args = {}, -- provide arguments if needed
         cwd = "${workspaceFolder}",
         stopAtBeginningOfMainSubprogram = function()

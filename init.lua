@@ -18,4 +18,4 @@ require "keymaps"
 require "languages_setup"
 
 -- [[ Sets up General Tooks like Buffer Selector ]]
-require "general_tools_setup"
+require "tools_setup"

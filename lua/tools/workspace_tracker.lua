@@ -1,4 +1,5 @@
 local general = require "tools.general_functions"
+local menu = require "tools.ui.menuing"
 
 local workspace_tracker = {}
 local workspaceDirectory = "unset"
@@ -9,7 +10,7 @@ local markers = {
     cpp = { { ".clangd", ".clang-format", "build" }, { "CMakeLists.txt", ".git", "src" } },
     cmake = { { ".clangd", ".clang-format", "build" }, { "CMakeLists.txt", ".git", "src" } },
     gdscript = { { "project.godot" } },
-    lua = { { ".stylua.tomssl" }, { "tests.txt" } },
+    lua = { { ".stylua.toml" } },
 }
 
 workspace_tracker.isWorkspaceSet = function()
@@ -28,7 +29,7 @@ workspace_tracker.getWindowsWorkspace = function()
     return workspaceDirectory:gsub("/", "\\")
 end
 
-workspace_tracker.findWorkspaces = function(pMarkers)
+local findWorkspaces = function(pMarkers)
     local paths = {}
     local i = 1
 
@@ -55,7 +56,7 @@ workspace_tracker.findWorkspaces = function(pMarkers)
     return paths
 end
 
-workspace_tracker.user_select_path = function(pathsTable)
+local user_select_path = function(pathsTable)
     local endPath = nil
 
     for _, paths in pairs(pathsTable) do
@@ -63,7 +64,7 @@ workspace_tracker.user_select_path = function(pathsTable)
         elseif #paths == 1 then
             endPath = paths[1]
         else
-            endPath = general.customOptionsMenu(paths, { columnCharCount = 59, rowCount = #paths + 1 })
+            endPath = menu.customOptionsMenu(paths, { columnCharCount = 59, rowCount = #paths + 1 })
             break
         end
     end
@@ -72,7 +73,7 @@ workspace_tracker.user_select_path = function(pathsTable)
 end
 
 ---@param pMarkers table
-workspace_tracker.setWorkspace = function(pMarkers)
+local setWorkspace = function(pMarkers)
     if workspace_tracker.isWorkspaceSet() == true then
         local input = vim.fn.input {
             default = "Y",
@@ -85,14 +86,14 @@ workspace_tracker.setWorkspace = function(pMarkers)
         end
     end
 
-    local paths = workspace_tracker.findWorkspaces(pMarkers)
+    local paths = findWorkspaces(pMarkers)
 
     if paths == nil then
         print "No roots found"
         return
     end
 
-    local result = workspace_tracker.user_select_path(paths)
+    local result = user_select_path(paths)
     if result == nil then
         print "Home not set"
         return
@@ -108,23 +109,32 @@ workspace_tracker.setWorkspace = function(pMarkers)
     vim.fn.chdir(workspaceDirectory)
 end
 
-vim.keymap.set("n", "<F1>", function()
+workspace_tracker.apiSetWorkspace = function()
     local ft = vim.bo.ft
     if markers[ft] == nil then
-        vim.notify "Filetype not supported for workspaces"
-        return
+        return false
     end
-    workspace_tracker.setWorkspace(markers[ft])
-    if vim.bo.ft == "c" or vim.bo.ft == "cpp" or vim.bo.ft == "cmake" then
+    setWorkspace(markers[ft])
+    if ft == "c" or ft == "cpp" or ft == "cmake" then
         require("language_configurations.cppAndC.keybinds").setup_keybinds()
+    elseif ft == "gdscript" then
+        require("language_configurations.gdscript").setupKeybinds()
+        require("language_configurations.gdscript").startListenServerForFileJumps()
+    end
+    return true
+end
+
+vim.keymap.set("n", "<F1>", function()
+    local success = workspace_tracker.apiSetWorkspace()
+    if not success then
+        vim.notify "Filetype not supported"
     end
 end)
 
 vim.api.nvim_create_user_command("SetWorkspace", function()
-    local ft = vim.bo.ft
-    workspace_tracker.setWorkspace(markers[ft])
-    if vim.bo.ft == "c" or vim.bo.ft == "cpp" or vim.bo.ft == "cmake" then
-        require("language_configurations.cppAndC.keybinds").setup_keybinds()
+    local success = workspace_tracker.apiSetWorkspace()
+    if not success then
+        vim.notify "Filetype not supported"
     end
 end, {})
 

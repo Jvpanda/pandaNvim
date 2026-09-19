@@ -1,3 +1,5 @@
+local workspace = require "tools.workspace_tracker"
+
 local arduino_setup = require "language_configurations.arduino"
 local cpp_lsp = require "language_configurations.cppAndC.clangd_lsp_setup"
 local gdscript_setup = require "language_configurations.gdscript"
@@ -19,8 +21,8 @@ lua_setup.LSPSetup()
 rust_setup.LSPSetup()
 
 --[[Configure DAP's]]
-local cpp_dap = require "language_configurations.cppAndC.debug.dapSettings"
-local c_embedded_dap = require "language_configurations.cppAndC.debug.cDapConfig"
+require "language_configurations.cppAndC.debug.dapSettings"
+require "language_configurations.cppAndC.debug.cDapConfig"
 
 -- [[ Basic Autocommands ]]
 local myAutogroup = vim.api.nvim_create_augroup("LSPKeybindAutogroup", { clear = true })
@@ -31,10 +33,8 @@ vim.api.nvim_create_autocmd("BufEnter", {
     group = myAutogroup,
     pattern = "*",
     callback = function()
-        local filetype = vim.bo.filetype
-        if filetype == "gdscript" then
-            gdscript_setup.setupKeybinds()
-            gdscript_setup.startListenServerForFileJumps()
+        if not workspace.isWorkspaceSet() then
+            workspace.apiSetWorkspace()
         end
     end,
 })

@@ -1,4 +1,4 @@
-local general = require "tools.general_functions"
+local menu = require "tools.ui.menuing"
 local dap = require "dap"
 local dapView = require "dap-view"
 local opts = require "language_configurations.cppAndC.general_opts"
@@ -35,7 +35,7 @@ x["Run"] = "Breakpoint At Start"
 x["Stop"] = "Run Past Start"
 
 Api.open_dap_debug_menu = function()
-    general.customOptionsMenu({
+    menu.customOptionsMenu({
         "Toggle Dap View",
         "Terminate",
         "Pause Thread",
@@ -44,7 +44,7 @@ Api.open_dap_debug_menu = function()
         x[opts.debugRunStart],
         "Run Last Dap",
         "Open REPL",
-    }, { rowCount = 8, widthRatio = 0.2 }, handle_dap_menu)
+    }, { heightOffset = 8, widthRatio = 0.2 }, handle_dap_menu)
 end
 
 return Api
