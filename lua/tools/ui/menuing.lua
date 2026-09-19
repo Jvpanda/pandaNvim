@@ -42,7 +42,7 @@ local move_up_wrap_around = function(buf, win)
     end
 end
 
-local open_non_blocking_menu = function(buf, win, callbackFunction, passedArgs)
+M.set_non_blocking_keybinds = function(buf, win, callbackFunction, passedArgs)
     render(buf, 1)
 
     vim.keymap.set({ "n" }, "<esc>", function()
@@ -113,7 +113,7 @@ M.customOptionsMenu = function(printedOptions, windowOpts, callbackFunction, ...
         local result = open_blocking_menu(buf, win)
         return result
     else
-        open_non_blocking_menu(buf, win, callbackFunction, passedArgs)
+        M.set_non_blocking_keybinds(buf, win, callbackFunction, passedArgs)
     end
 end
 
