@@ -67,7 +67,7 @@ W.create_floating_window = function(opts)
     return buf, vim.api.nvim_open_win(buf, true, win_config)
 end
 
-W.deleteCurrentWindow = function(isTerminal, win, buf)
+W.deleteCurrentWindow = function(isTerminal, buf, win)
     isTerminal = isTerminal or false
     win = win or nil
     buf = buf or nil
