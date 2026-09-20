@@ -27,8 +27,7 @@ function M.move_to(aManager, aWindow, deltaRow, deltaCol)
         return
     end
 
-    aManager.currentRow = target.Position.y
-    aManager.currentCol = target.Position.x
+    state.set_current_window(aManager, target)
 
     render.clear(aWindow.BufNumber)
 
@@ -117,17 +116,29 @@ end
 function M.refresh(aManager)
     state.collect_buffers(aManager)
 
+    local fallback = nil
     for i = 1, state.GRID_ROWS do
         for j = 1, state.GRID_COLS do
             if aManager.windows[i][j].Visible then
                 aManager.currentRow, aManager.currentCol = i, j
                 M.setAll(aManager)
+                fallback = aManager.windows[i][j]
             end
         end
     end
 
-    local center = aManager.windows[2][2]
-    render.render_line_at_cursor_pos(center.WinNumber, center.BufNumber)
+    local last = aManager.windows[aManager.lastRow][aManager.lastCol]
+    if not last.Visible then
+        last = fallback
+    end
+
+    if last == nil then
+        return
+    end
+
+    state.set_current_window(aManager, last)
+    vim.api.nvim_set_current_win(last.WinNumber)
+    render.render_line_at_cursor_pos(last.WinNumber, last.BufNumber)
 end
 
 ---@return WindowManager

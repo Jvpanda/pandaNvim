@@ -32,6 +32,8 @@ M.GRID_COLS = 3
 ---@field allBuffs table<BufferId,BufferState>
 ---@field currentRow integer
 ---@field currentCol integer
+---@field lastRow integer
+---@field lastCol integer
 
 ---@param buf BufferId
 ---@return BufferState
@@ -74,6 +76,8 @@ function M.new_manager()
 
     manager.currentRow = math.ceil(M.GRID_ROWS / 2)
     manager.currentCol = math.ceil(M.GRID_COLS / 2)
+    manager.lastRow = manager.currentRow
+    manager.lastCol = manager.currentCol
 
     return manager
 end
@@ -89,6 +93,8 @@ end
 function M.set_current_window(aManager, aWindow)
     aManager.currentRow = aWindow.Position.y
     aManager.currentCol = aWindow.Position.x
+    aManager.lastRow = aWindow.Position.y
+    aManager.lastCol = aWindow.Position.x
 end
 
 ---@param aManager WindowManager
