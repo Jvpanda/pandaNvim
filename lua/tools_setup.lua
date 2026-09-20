@@ -1,9 +1,8 @@
-local buffer_selector = require "tools.buffer_selector"
 local env = require "tools.environment_setup.terminal_api"
 local general = require "tools.general_functions"
 
 --[[Tools]]
-buffer_selector.setupBufferSelector()
+require "tools.ui.buffer_selector_v2"
 require "tools.lua_snippets"
 
 --Terminal Bootstrap

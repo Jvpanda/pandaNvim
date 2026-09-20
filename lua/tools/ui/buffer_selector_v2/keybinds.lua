@@ -59,12 +59,17 @@ function M.attach_delete_all(api, aManager, aWindow)
     vim.keymap.set({ "n" }, "<esc>", function()
         api.delete_all(aManager)
     end, { buffer = aWindow.BufNumber })
+
+    vim.keymap.set({ "n" }, "D", function()
+        local line = vim.fn.getline "."
+        api.delete_buffer(aManager, aWindow, line)
+    end, { buffer = aWindow.BufNumber })
 end
 
 ---@param api table
 ---@param aManager WindowManager
 function M.attach_open(api, aManager)
-    vim.keymap.set({ "n" }, "<leader>k", function()
+    vim.keymap.set({ "n" }, "<leader>j", function()
         api.refresh(aManager)
     end, {})
 end

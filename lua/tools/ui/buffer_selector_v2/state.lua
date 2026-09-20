@@ -26,6 +26,7 @@ M.GRID_COLS = 3
 ---@field Visible boolean
 ---@field WindowOpts FloatingWindowOpts
 ---@field BufferList table<string,BufferId>
+---@field Order string[]
 
 ---@class WindowManager
 ---@field windows BufferSelectorWindow[][]
@@ -68,6 +69,7 @@ function M.new_manager()
             manager.windows[i][j] = {
                 WindowOpts = { widthRatio = 0.3, heightRatio = 0.27, col = 0.0, row = 0.0, rowOffset = 8 + (i - 1) * 18, colOffset = 36 + 70 * (j - 1) },
                 BufferList = {},
+                Order = {},
                 Position = { x = j, y = i },
                 Visible = false,
             }
@@ -113,11 +115,34 @@ function M.neighbor_window(aManager, aWindow, deltaRow, deltaCol)
     return aManager.windows[row][col]
 end
 
+---@param aWindow BufferSelectorWindow
+---@param name string
+---@param value BufferId
+function M.insert_buffer(aWindow, name, value)
+    if aWindow.BufferList[name] == nil then
+        aWindow.BufferList[name] = value
+        table.insert(aWindow.Order, name)
+    end
+end
+
+---@param aWindow BufferSelectorWindow
+---@param name string
+function M.remove_buffer(aWindow, name)
+    aWindow.BufferList[name] = nil
+    for i, ordered_name in ipairs(aWindow.Order) do
+        if ordered_name == name then
+            table.remove(aWindow.Order, i)
+            break
+        end
+    end
+end
+
 ---@param aManager WindowManager
 ---@param aWindow BufferSelectorWindow
 ---@param value BufferId
 function M.add_buffer_to_window(aManager, aWindow, value)
-    local name = aManager.allBuffs[value].name
+    local buffer = aManager.allBuffs[value]
+    local name = buffer.name
     local adjusted_name = vim.fn.fnamemodify(name, ":t")
 
     for parent in vim.fs.parents(name) do
@@ -126,9 +151,8 @@ function M.add_buffer_to_window(aManager, aWindow, value)
         end
     end
 
-    if aManager.allBuffs[value].listed then
-        aWindow.BufferList[adjusted_name] = value
-        print("put: " .. adjusted_name .. " in " .. aWindow.Position.y, aWindow.Position.x)
+    if buffer.listed and buffer.buftype ~= "nofile" then
+        M.insert_buffer(aWindow, adjusted_name, value)
     end
 end
 
@@ -139,10 +163,11 @@ end
 function M.swap_buffer_to_window(aManager, destRow, destCol, name)
     local source = M.current_window(aManager)
     local dest = aManager.windows[destRow][destCol]
+    local value = source.BufferList[name]
 
-    M.add_buffer_to_window(aManager, dest, source.BufferList[name])
-    print(source.BufferList[name])
-    source.BufferList[name] = nil
+    M.add_buffer_to_window(aManager, dest, value)
+    print(value)
+    M.remove_buffer(source, name)
 end
 
 ---@param aManager WindowManager
@@ -154,11 +179,28 @@ function M.collect_buffers(aManager)
 end
 
 ---@param aManager WindowManager
+---@param aWindow BufferSelectorWindow
+function M.assign_remaining_buffers(aManager, aWindow)
+    local assigned = {}
+    for i = 1, M.GRID_ROWS do
+        for j = 1, M.GRID_COLS do
+            for _, value in pairs(aManager.windows[i][j].BufferList) do
+                assigned[value] = true
+            end
+        end
+    end
+
+    for _, value in ipairs(vim.api.nvim_list_bufs()) do
+        if not assigned[value] and aManager.allBuffs[value] ~= nil then
+            M.add_buffer_to_window(aManager, aWindow, value)
+        end
+    end
+end
+
+---@param aManager WindowManager
 function M.set_base_state(aManager)
     M.collect_buffers(aManager)
-    for _, value in ipairs(vim.api.nvim_list_bufs()) do
-        M.add_buffer_to_window(aManager, M.current_window(aManager), value)
-    end
+    M.assign_remaining_buffers(aManager, M.current_window(aManager))
 end
 
 ---@param aManager WindowManager

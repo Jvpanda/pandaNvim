@@ -59,15 +59,23 @@ end
 ---@param aWindow BufferSelectorWindow
 function M.render_window(aManager, aWindow)
     local namelist = {}
-    local i = 1
-    for key, value in pairs(aWindow.BufferList) do
-        if aManager.allBuffs[value] == nil then
-            aWindow.BufferList[key] = nil
-        elseif aManager.allBuffs[value].listed then
-            namelist[i] = key
-            i = i + 1
+    local order = {}
+
+    for _, name in ipairs(aWindow.Order) do
+        local value = aWindow.BufferList[name]
+        if value ~= nil then
+            if aManager.allBuffs[value] == nil then
+                aWindow.BufferList[name] = nil
+            else
+                table.insert(order, name)
+                if aManager.allBuffs[value].listed then
+                    table.insert(namelist, name)
+                end
+            end
         end
     end
+
+    aWindow.Order = order
     vim.api.nvim_buf_set_lines(aWindow.BufNumber, 0, -1, false, namelist)
 end
 

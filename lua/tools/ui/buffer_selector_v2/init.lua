@@ -113,6 +113,14 @@ function M.delete_all(aManager)
 end
 
 ---@param aManager WindowManager
+---@param aWindow BufferSelectorWindow
+function M.delete_buffer(aManager, aWindow, line)
+    vim.api.nvim_buf_delete(state.current_window(aManager).BufferList[line], {})
+    state.current_window(aManager).BufferList[line] = nil
+    vim.api.nvim_del_current_line()
+end
+
+---@param aManager WindowManager
 function M.refresh(aManager)
     state.collect_buffers(aManager)
 
@@ -136,6 +144,9 @@ function M.refresh(aManager)
         return
     end
 
+    state.assign_remaining_buffers(aManager, last)
+    render.render_window(aManager, last)
+
     state.set_current_window(aManager, last)
     vim.api.nvim_set_current_win(last.WinNumber)
     render.render_line_at_cursor_pos(last.WinNumber, last.BufNumber)
@@ -149,9 +160,6 @@ function M.setup()
 
     manager.windows[2][2].Visible = true
     state.set_base_state(manager)
-    state.swap_buffer_to_window(manager, 1, 1, "main.cpp")
-    manager.windows[1][1].Visible = true
-    vim.print(manager.windows[1][1].BufferList)
 
     vim.cmd.redraw()
 
