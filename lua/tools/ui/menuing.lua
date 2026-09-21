@@ -46,7 +46,7 @@ function M.set_non_blocking_keybinds(buf, win, callbackFunction, passedArgs)
     M.render(buf, 1)
 
     vim.keymap.set({ "n" }, "<esc>", function()
-        window.deleteCurrentWindow(true)
+        window.deleteCurrentWindow(true, buf, win)
     end, { buffer = true })
 
     vim.keymap.set("n", "j", function()
@@ -60,7 +60,7 @@ function M.set_non_blocking_keybinds(buf, win, callbackFunction, passedArgs)
     if callbackFunction ~= nil then
         vim.keymap.set("n", "<CR>", function()
             local line = vim.fn.getline "."
-            window.deleteCurrentWindow(false)
+            window.deleteCurrentWindow(false, buf, win)
             if callbackFunction then
                 callbackFunction(line, passedArgs)
             end
@@ -88,7 +88,7 @@ function M.open_blocking_menu(buf, win)
         vim.cmd "redraw"
     end
     if vim.api.nvim_win_is_valid(win) then
-        window.deleteCurrentWindow()
+        window.deleteCurrentWindow(false, buf, win)
     end
 
     return result

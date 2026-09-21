@@ -27,6 +27,7 @@ M.GRID_COLS = 3
 ---@field WindowOpts FloatingWindowOpts
 ---@field BufferList table<string,BufferId>
 ---@field Order string[]
+---@field Name string
 
 ---@class WindowManager
 ---@field windows BufferSelectorWindow[][]
@@ -72,6 +73,7 @@ function M.new_manager()
                 Order = {},
                 Position = { x = j, y = i },
                 Visible = false,
+                Name = "",
             }
         end
     end
@@ -138,22 +140,50 @@ function M.remove_buffer(aWindow, name)
 end
 
 ---@param aManager WindowManager
----@param aWindow BufferSelectorWindow
+---@param aBufferList table<string,BufferId>
 ---@param value BufferId
-function M.add_buffer_to_window(aManager, aWindow, value)
-    local buffer = aManager.allBuffs[value]
-    local name = buffer.name
+---@return string
+local function resolve_name(aManager, aBufferList, value)
+    local name = aManager.allBuffs[value].name
     local adjusted_name = vim.fn.fnamemodify(name, ":t")
 
     for parent in vim.fs.parents(name) do
-        if aWindow.BufferList[adjusted_name] ~= nil then
+        if aBufferList[adjusted_name] ~= nil then
             adjusted_name = vim.fn.fnamemodify(parent, ":h:t") .. "/" .. vim.fn.fnamemodify(parent, ":t") .. "/" .. adjusted_name
         end
     end
 
+    return adjusted_name
+end
+
+---@param aManager WindowManager
+---@param aWindow BufferSelectorWindow
+---@param value BufferId
+function M.add_buffer_to_window(aManager, aWindow, value)
+    local buffer = aManager.allBuffs[value]
+
     if buffer.listed and buffer.buftype ~= "nofile" then
-        M.insert_buffer(aWindow, adjusted_name, value)
+        M.insert_buffer(aWindow, resolve_name(aManager, aWindow.BufferList, value), value)
     end
+end
+
+---@param aManager WindowManager
+---@param aWindow BufferSelectorWindow
+function M.refresh_names(aManager, aWindow)
+    local bufferList = {}
+    local order = {}
+
+    for _, name in ipairs(aWindow.Order) do
+        local value = aWindow.BufferList[name]
+        if value ~= nil and aManager.allBuffs[value] ~= nil then
+            local resolved_name = resolve_name(aManager, bufferList, value)
+            bufferList[resolved_name] = value
+            table.insert(order, resolved_name)
+        end
+    end
+
+    aWindow.BufferList = bufferList
+    aWindow.Order = order
 end
 
 ---@param aManager WindowManager

@@ -7,11 +7,19 @@ local M = {}
 ---@param aWindow BufferSelectorWindow
 function M.attach_window(api, aManager, aWindow)
     vim.keymap.set("n", "j", function()
-        render.move_down_wrap_around(aWindow.BufNumber, aWindow.WinNumber)
+        local return_height = 1
+        if aWindow.Name ~= "" then
+            return_height = 3
+        end
+        render.move_down_wrap_around(aWindow.BufNumber, aWindow.WinNumber, return_height)
     end, { buffer = aWindow.BufNumber })
 
     vim.keymap.set("n", "k", function()
-        render.move_up_wrap_around(aWindow.BufNumber, aWindow.WinNumber)
+        local min_height = 1
+        if aWindow.Name ~= "" then
+            min_height = 3
+        end
+        render.move_up_wrap_around(aWindow.BufNumber, aWindow.WinNumber, min_height)
     end, { buffer = aWindow.BufNumber })
 
     vim.keymap.set("n", "<CR>", function()
@@ -49,6 +57,12 @@ function M.attach_window(api, aManager, aWindow)
 
     vim.keymap.set({ "n" }, "L", function()
         api.move_buffers(aManager, aWindow, 0, 1, vim.v.count1)
+    end, { buffer = aWindow.BufNumber })
+
+    vim.keymap.set({ "n" }, "<leader>j", function()
+        aWindow.Name = vim.fn.input { cancelreturn = "", prompt = "Type Name: " }
+        api.delete_all(aManager)
+        api.refresh(aManager)
     end, { buffer = aWindow.BufNumber })
 end
 

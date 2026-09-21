@@ -29,11 +29,11 @@ end
 
 ---@param buf integer
 ---@param win integer
-function M.move_down_wrap_around(buf, win)
+function M.move_down_wrap_around(buf, win, returnHeight)
     local coords = vim.api.nvim_win_get_cursor(win)
     local bottomLine = vim.fn.line "$"
     if coords[1] >= bottomLine then
-        vim.api.nvim_win_set_cursor(win, { 1, coords[2] })
+        vim.api.nvim_win_set_cursor(win, { returnHeight, coords[2] })
         M.render_line_at_cursor_pos(win, buf)
     else
         vim.api.nvim_win_set_cursor(win, { coords[1] + 1, coords[2] })
@@ -43,10 +43,10 @@ end
 
 ---@param buf integer
 ---@param win integer
-function M.move_up_wrap_around(buf, win)
+function M.move_up_wrap_around(buf, win, minHeight)
     local coords = vim.api.nvim_win_get_cursor(win)
     local bottomLine = vim.fn.line "$"
-    if coords[1] == 1 then
+    if coords[1] == minHeight then
         vim.api.nvim_win_set_cursor(win, { bottomLine, coords[2] })
         M.render_line_at_cursor_pos(win, buf)
     else
@@ -72,6 +72,14 @@ function M.render_window(aManager, aWindow)
                     table.insert(namelist, name)
                 end
             end
+        end
+    end
+
+    if aWindow.Name ~= "" then
+        table.insert(namelist, 1, aWindow.Name)
+        table.insert(namelist, 2, "----------------------------")
+        if next(aWindow.BufferList) == nil then
+            table.insert(namelist, 3, "")
         end
     end
 

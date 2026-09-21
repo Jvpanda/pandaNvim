@@ -64,7 +64,7 @@ local user_select_path = function(pathsTable)
         elseif #paths == 1 then
             endPath = paths[1]
         else
-            endPath = menu.customOptionsMenu(paths, { columnCharCount = 59, rowCount = #paths + 1 })
+            endPath = menu.customOptionsMenu(paths, { widthOffset = 59, heightOffset = #paths + 1 })
             break
         end
     end

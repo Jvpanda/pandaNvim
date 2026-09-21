@@ -37,6 +37,10 @@ function M.move_to(aManager, aWindow, deltaRow, deltaCol)
         M.setAll(aManager)
     end
 
+    if target.Name ~= "" then
+        vim.api.nvim_win_set_cursor(target.WinNumber, { 3, 0 })
+    end
+
     render.render_line_at_cursor_pos(target.WinNumber, target.BufNumber)
 end
 
@@ -124,6 +128,12 @@ end
 function M.refresh(aManager)
     state.collect_buffers(aManager)
 
+    for i = 1, state.GRID_ROWS do
+        for j = 1, state.GRID_COLS do
+            state.refresh_names(aManager, aManager.windows[i][j])
+        end
+    end
+
     local fallback = nil
     for i = 1, state.GRID_ROWS do
         for j = 1, state.GRID_COLS do
@@ -149,6 +159,9 @@ function M.refresh(aManager)
 
     state.set_current_window(aManager, last)
     vim.api.nvim_set_current_win(last.WinNumber)
+    if last.Name ~= "" then
+        vim.api.nvim_win_set_cursor(last.WinNumber, { 3, 0 })
+    end
     render.render_line_at_cursor_pos(last.WinNumber, last.BufNumber)
 end
 
