@@ -1,8 +1,7 @@
 local funcs = {}
-local window = require "tools.ui.windowing"
 
 ---@return boolean
-funcs.isOnWindows = function()
+function funcs.isOnWindows()
     if vim.fn.has "Win32" == 0 then
         return false
     else
@@ -11,8 +10,15 @@ funcs.isOnWindows = function()
 end
 
 -- Copies files from the specified folder to the cwd
-funcs.generate_environment_file = function(fileName)
-    local destination = vim.fn.getcwd() .. "/" .. vim.fn.fnamemodify(fileName, ":t")
+function funcs.generate_environment_file(fileName, custom_destination_dir)
+    local dest_param = custom_destination_dir or nil
+    local destination = ""
+    if dest_param ~= nil then
+        destination = custom_destination_dir .. "/" .. vim.fn.fnamemodify(fileName, ":t")
+    else
+        destination = vim.fn.getcwd() .. "/" .. vim.fn.fnamemodify(fileName, ":t")
+    end
+
     if vim.fn.filereadable(vim.fn.fnamemodify(fileName, ":t")) == 1 then
         return
     end
@@ -26,9 +32,9 @@ funcs.generate_environment_file = function(fileName)
 end
 
 -- not annoying Print
-funcs.naPrint = function(input)
+function funcs.naPrint(input)
     local oldCommandHeight = vim.o.cmdheight
-    vim.o.cmdheight = 20
+    vim.o.cmdheight = 10000
     vim.print(input)
     vim.o.cmdheight = oldCommandHeight
 end
@@ -36,7 +42,7 @@ end
 -- [[ Global Functions ]]
 
 -- Assing this
-DebugKey = function(keymap, func, ...)
+function DebugKey(keymap, func, ...)
     keymap = keymap or "<leader>l"
     local params = unpack(...) or nil
     vim.keymap.set("n", keymap, function()
@@ -56,7 +62,7 @@ end
     meaning that it will pass the stdout to the yields initial call, the thing is the because we returned the
     yield from the await system, it will actually just copy that return value to the response. And that's how it's done
     --]]
-Async = function(f, ...)
+function Async(f, ...)
     local co = coroutine.create(f)
     local function step(...)
         local args = (...)
@@ -77,7 +83,7 @@ Async = function(f, ...)
     step(...)
 end
 
-Await_System = function(cmd, opts)
+function Await_System(cmd, opts)
     return coroutine.yield(function(resolve)
         vim.system(cmd, opts or {}, function(obj)
             resolve(obj.stdout)

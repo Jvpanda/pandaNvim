@@ -96,9 +96,9 @@ end
 
 --Custom Option Selector
 ---@param printedOptions any
----@param windowOpts FloatingWindowOpts
----@param callbackFunction any
----@param ... unknown
+---@param windowOpts FloatingWindowOpts ?
+---@param callbackFunction any ?
+---@param ... unknown ?
 ---@return unknown|nil
 function M.customOptionsMenu(printedOptions, windowOpts, callbackFunction, ...)
     callbackFunction = callbackFunction or nil

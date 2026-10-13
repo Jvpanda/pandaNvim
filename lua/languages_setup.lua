@@ -28,12 +28,12 @@ require "language_configurations.cppAndC.debug.cDapConfig"
 local myAutogroup = vim.api.nvim_create_augroup("LSPKeybindAutogroup", { clear = true })
 
 -- Decide which keybinds to use when entering buf
-vim.api.nvim_create_autocmd("BufEnter", {
+vim.api.nvim_create_autocmd("BufWinEnter", {
     desc = "Runs the necessary keybinds when entering a buffer",
     group = myAutogroup,
     pattern = "*",
     callback = function()
-        if not workspace.isWorkspaceSet() then
+        if workspace.getWorkspace() == nil then
             workspace.apiSetWorkspace()
         end
     end,

@@ -46,10 +46,6 @@ local setupPersonalKeybinds = function()
         vim.ui.open(vim.fn.expand "%:p:h")
     end, { desc = "Open Current Window in Explorer" })
 
-    vim.keymap.set("n", "<leader>ps", function()
-        require("oil").toggle_float "~/Source/"
-    end, { desc = "Open Source Dir" })
-
     -- [[Set current window to half the width of the screen]]
     vim.keymap.set("n", "<leader>po", function()
         local width = math.floor(vim.o.columns * 0.5)

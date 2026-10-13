@@ -5,31 +5,32 @@ local workspace_tracker = {}
 local workspaceDirectory = "unset"
 
 -- Every sub table is a list of markers. The order of the lists is order of importance
+-- It will search only for build first thorugh the directories for exmaple. Then if it doesn't find it, on its second pass it will search for the rest
 local markers = {
-    c = { { ".clangd", ".clang-format", "build" }, { "CMakeLists.txt", ".git", "src" } },
-    cpp = { { ".clangd", ".clang-format", "build" }, { "CMakeLists.txt", ".git", "src" } },
-    cmake = { { ".clangd", ".clang-format", "build" }, { "CMakeLists.txt", ".git", "src" } },
+    c = { { "build" }, { ".clang-format", "CMakeLists.txt", ".clangd", ".git", "src" } },
+    cpp = { { "build" }, { ".clang-format", "CMakeLists.txt", ".clangd", ".git", "src" } },
+    cmake = { { "build" }, { ".clang-format", "CMakeLists.txt", ".clangd", ".git", "src" } },
     gdscript = { { "project.godot" } },
     lua = { { ".stylua.toml" } },
 }
 
-workspace_tracker.isWorkspaceSet = function()
+function workspace_tracker.getWorkspace()
     if workspaceDirectory == "unset" then
-        return false
+        return nil
     else
-        return true
+        return workspaceDirectory
     end
 end
 
-workspace_tracker.getWorkspace = function()
-    return workspaceDirectory
+function workspace_tracker.getWindowsWorkspace()
+    if workspaceDirectory == "unset" then
+        return nil
+    else
+        return workspaceDirectory:gsub("/", "\\")
+    end
 end
 
-workspace_tracker.getWindowsWorkspace = function()
-    return workspaceDirectory:gsub("/", "\\")
-end
-
-local findWorkspaces = function(pMarkers)
+local function findWorkspaces(pMarkers)
     local paths = {}
     local i = 1
 
@@ -56,7 +57,7 @@ local findWorkspaces = function(pMarkers)
     return paths
 end
 
-local user_select_path = function(pathsTable)
+local function user_select_path(pathsTable)
     local endPath = nil
 
     for _, paths in pairs(pathsTable) do
@@ -73,8 +74,8 @@ local user_select_path = function(pathsTable)
 end
 
 ---@param pMarkers table
-local setWorkspace = function(pMarkers)
-    if workspace_tracker.isWorkspaceSet() == true then
+local function setWorkspace(pMarkers)
+    if workspaceDirectory ~= "unset" then
         local input = vim.fn.input {
             default = "Y",
             cancelreturn = "abort",
@@ -109,7 +110,7 @@ local setWorkspace = function(pMarkers)
     vim.fn.chdir(workspaceDirectory)
 end
 
-workspace_tracker.apiSetWorkspace = function()
+function workspace_tracker.apiSetWorkspace()
     local ft = vim.bo.ft
     if markers[ft] == nil then
         return false

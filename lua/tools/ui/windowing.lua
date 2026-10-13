@@ -25,9 +25,9 @@ W.create_floating_window = function(opts)
     -- This allows the offset to either increase or decrease the size.
     -- Will be 0 by default
 
-    local width = math.floor((vim.o.columns * (opts.widthRatio or 0)) + (opts.widthOffset or 0))
+    local width = math.floor((vim.o.columns * (opts.widthRatio or 0.25)) + (opts.widthOffset or 0))
 
-    local height = math.floor((vim.o.lines * (opts.heightRatio or 0)) + (opts.heightOffset or 0))
+    local height = math.floor((vim.o.lines * (opts.heightRatio or 0.25)) + (opts.heightOffset or 0))
 
     -- Col and row determine the position of the window.
     --

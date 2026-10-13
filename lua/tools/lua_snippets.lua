@@ -8,7 +8,7 @@ local s = ls.snippet
 local sn = ls.snippet_node
 local t = ls.text_node
 
-local show_if_empty_line = function(lineUntilCursor)
+local function show_if_empty_line(lineUntilCursor)
     if lineUntilCursor:match "^%s*$" == nil then
         return false
     else
@@ -40,7 +40,7 @@ vim.keymap.set({ "i", "s" }, "<C-j>", function()
 end, { silent = true })
 
 local get_case
-get_case = function(position)
+function get_case(position)
     return d(position, function()
         return sn(
             nil,
@@ -52,7 +52,7 @@ get_case = function(position)
     end, {}, {})
 end
 
-local curly_snippet = function(position)
+local function curly_snippet(position)
     return d(position, function()
         local line = vim.api.nvim_get_current_line()
         local row, col = unpack(vim.api.nvim_win_get_cursor(0))
