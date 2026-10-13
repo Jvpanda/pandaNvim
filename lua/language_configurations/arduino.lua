@@ -63,7 +63,7 @@ end
 
 arduino_setup.setupKeybinds = function()
     vim.keymap.set("n", "<F9>", function()
-        if workspace.isWorkspaceSet() then
+        if workspace.getWorkspace ~= nil then
             local input = vim.fn.input { prompt = "Please input a name for the sketch: ", cancelreturn = "none" }
 
             if input == "none" then
@@ -78,7 +78,7 @@ arduino_setup.setupKeybinds = function()
     end, { desc = "Creates a new sketch relative to the workspace" })
 
     vim.keymap.set("n", "<F10>", function()
-        if workspace.isWorkspaceSet() then
+        if workspace.getWorkspace ~= nil then
             print "Attaching board..."
             createYamlAttach(workspace.getWorkspace() .. "src/sketch.yaml")
         else
@@ -87,7 +87,7 @@ arduino_setup.setupKeybinds = function()
     end, { desc = "Attaches the board via yaml" })
 
     vim.keymap.set("n", "<F11>", function()
-        if workspace.isWorkspaceSet() then
+        if workspace.getWorkspace ~= nil then
             vim.cmd.wa()
             print "Compiling and Uploading..."
             local result = vim.fn.system { "arduino-cli", "compile", workspace.getWorkspace() .. "src/", "-u" }

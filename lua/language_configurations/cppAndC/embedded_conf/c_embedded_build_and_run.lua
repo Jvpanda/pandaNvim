@@ -1,15 +1,18 @@
 local M = {}
 local opts = require "language_configurations.cppAndC.general_opts"
+local build_progress = require "tools.build_progress"
 local workspace = require "tools.workspace_tracker"
 
 -- [[ Editor Environment Setup]]
 
 M.cmake_generate_build = function()
-    local result = Await_System {
-        "cmake",
-        "--preset",
-        opts.buildType,
-    }
+    local result = build_progress.await({ "cmake", "--preset", opts.buildType }, {}, {
+        title = "CMake",
+        message = "Generating build files (" .. opts.buildType .. ")",
+        successMessage = "Build files generated",
+        warningMessage = "Build files generated with warnings",
+        errorMessage = "Build file generation failed",
+    })
 
     -- Create symlink for compile commands
     local source = workspace.getWorkspace() .. "/build/" .. opts.buildType .. "/compile_commands.json"
@@ -27,22 +30,24 @@ end
 
 -- [[Flashing and Bin]]
 M.cmake_flash = function()
-    local result = Await_System {
-        "cmake",
-        "--build",
-        "--preset",
-        "flash",
-    }
+    local result = build_progress.await({ "cmake", "--build", "--preset", "flash" }, {}, {
+        title = "CMake",
+        message = "Flashing board",
+        successMessage = "Board flashed",
+        warningMessage = "Flashing finished with warnings",
+        errorMessage = "Flashing failed",
+    })
     return "----------\n" .. result .. "----------\n"
 end
 
 M.cmake_bin = function()
-    local result = Await_System {
-        "cmake",
-        "--build",
-        "--preset",
-        "bin",
-    }
+    local result = build_progress.await({ "cmake", "--build", "--preset", "bin" }, {}, {
+        title = "CMake",
+        message = "Creating bin file",
+        successMessage = "Bin file created",
+        warningMessage = "Bin creation finished with warnings",
+        errorMessage = "Bin creation failed",
+    })
     return "----------\n" .. result .. "----------\n"
 end
 
@@ -50,12 +55,20 @@ end
 M.cmake_compile = function()
     vim.cmd.wa()
 
-    local result = Await_System({ "cmake", "--build", "--preset", opts.buildType }, {})
+    local result = build_progress.await({ "cmake", "--build", "--preset", opts.buildType }, {}, {
+        title = "CMake",
+        message = "Compiling (" .. opts.buildType .. ")",
+        successMessage = "Compilation succeeded",
+        warningMessage = "Compilation warning",
+        errorMessage = "Compilation failed",
+    })
 
-    if string.find(result, "error") ~= nil then
+    local status = build_progress.classify(result)
+
+    if status == "error" then
         local str = ("----------\nCOMPILATION ERROR\n----------\n" .. result .. "----------\nCOMPILATION ERROR\n----------\n")
         return false, str
-    elseif string.find(result, "warning") ~= nil then
+    elseif status == "warning" then
         local str = "----------\nCOMPILATION WARNING\n----------\n" .. result .. "----------\nCOMPILATION WARNING\n----------\n"
         return true, str
     else

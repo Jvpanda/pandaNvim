@@ -1,5 +1,6 @@
 local general = require "tools.general_functions"
 local opts = require "language_configurations.cppAndC.general_opts"
+local build_progress = require "tools.build_progress"
 local terminal = require "tools.environment_setup.terminal_api"
 local workspace = require "tools.workspace_tracker"
 
@@ -12,11 +13,13 @@ M.cmake_generate_build = function()
     general.generate_environment_file "cpp/CMakeLists.txt"
     general.generate_environment_file "cpp/.gitignore"
 
-    local result = Await_System {
-        "cmake",
-        "--preset",
-        opts.buildType,
-    }
+    local result = build_progress.await({ "cmake", "--preset", opts.buildType }, {}, {
+        title = "CMake",
+        message = "Generating build files (" .. opts.buildType .. ")",
+        successMessage = "Build files generated",
+        warningMessage = "Build files generated with warnings",
+        errorMessage = "Build file generation failed",
+    })
 
     -- Create symlink for compile commands
     local source = workspace.getWorkspace() .. "/build/" .. opts.buildType .. "/compile_commands.json"
@@ -37,12 +40,20 @@ M.cmake_compile = function()
     vim.cmd.wa()
     print("Compiling... with build type " .. opts.buildType)
 
-    local result = Await_System({ "cmake", "--build", "--preset", opts.buildType }, {})
+    local result = build_progress.await({ "cmake", "--build", "--preset", opts.buildType }, {}, {
+        title = "CMake",
+        message = "Compiling (" .. opts.buildType .. ")",
+        successMessage = "Compilation succeeded",
+        warningMessage = "Compilation warning",
+        errorMessage = "Compilation failed",
+    })
 
-    if string.find(result, "error") ~= nil then
+    local status = build_progress.classify(result)
+
+    if status == "error" then
         local str = ("----------\nCOMPILATION ERROR\n----------\n" .. result .. "----------\nCOMPILATION ERROR\n----------\n")
         return false, str
-    elseif string.find(result, "warning") ~= nil then
+    elseif status == "warning" then
         local str = "----------\nCOMPILATION WARNING\n----------\n" .. result .. "----------\nCOMPILATION WARNING\n----------\n"
         return true, str
     else

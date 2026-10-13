@@ -20,7 +20,6 @@
 
 ---@alias Debugger
 ---| "GDB"
----| "RADDBG"
 
 ---@class Options
 ---@field configuration Configuration
@@ -32,7 +31,7 @@
 ---@field compileFlags string
 ---@field buildFlags string
 local opts = {
-    configuration = "Generic",
+    configuration = "Zephyr",
     buildType = "Debug",
     runWindow = "external",
     vimFloatingWindowSize = { heightRatio = 0.45, widthRatio = 0.25, col = 1, row = 0 },
