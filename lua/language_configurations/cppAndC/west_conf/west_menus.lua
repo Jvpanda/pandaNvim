@@ -14,13 +14,15 @@ end
 -- [[ CUSTOM MENU CALLBACKS ]]
 
 mainMenuCallbacks["Set Board: " .. west_opts.board] = function()
-    local selection = menu.customOptionsMenu { "nucleo_f401re", "nucle_g474re", "teensy41" }
-    west_opts.board = selection
+    local selection = menu.customOptionsMenu { "nucleo_f401re", "nucle_g474re", "teensy41", "native_sim" }
+    if selection ~= nil then
+        west_opts.board = selection
+    end
 end
 
 mainMenuCallbacks["Set Runner: " .. west_opts.runner] = function()
     local selection = menu.customOptionsMenu { "openocd", "none" }
-    if selection == "none" then
+    if selection == "none" or nil then
         west_opts.runner = nil
     else
         west_opts.runner = selection

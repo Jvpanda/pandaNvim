@@ -15,6 +15,12 @@ M.generate_build = function()
 end
 
 M.flash = function()
+    local cmd = { "west", "flash" }
+    if west_options.runner ~= nil then
+        table.insert(cmd, "--runner")
+        table.insert(cmd, west_options.runner)
+    end
+
     local result = build_progress.await({ "west", "flash", "--runner", west_options.runner }, {}, {
         title = "West",
         message = "Flashing (" .. west_options.runner .. ")",
