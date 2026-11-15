@@ -13,7 +13,7 @@ local W = {}
 ---@param opts? FloatingWindowOpts
 ---@return integer buf Buffer handle
 ---@return integer win Window handle
-W.create_floating_window = function(opts)
+function W.create_floating_window(opts)
     opts = opts or {}
 
     -- The width and height are fundamentally measured in columns and rows.

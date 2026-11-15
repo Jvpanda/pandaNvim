@@ -36,6 +36,7 @@ M.GRID_COLS = 3
 ---@field currentCol integer
 ---@field lastRow integer
 ---@field lastCol integer
+---@field targetWindow integer|nil
 
 ---@param buf BufferId
 ---@return BufferState
@@ -68,7 +69,14 @@ function M.new_manager()
         manager.windows[i] = {}
         for j = 1, M.GRID_COLS do
             manager.windows[i][j] = {
-                WindowOpts = { widthRatio = 0.3, heightRatio = 0.27, col = 0.0, row = 0.0, rowOffset = 8 + (i - 1) * 18, colOffset = 36 + 70 * (j - 1) },
+                WindowOpts = {
+                    widthRatio = 0.3,
+                    heightRatio = 0.27,
+                    col = 0.0,
+                    row = 0.0,
+                    rowOffset = (8 + (i - 1) * (vim.o.lines * 0.33)),
+                    colOffset = (36 + (vim.o.columns * 0.33) * (j - 1)),
+                },
                 BufferList = {},
                 Order = {},
                 Position = { x = j, y = i },
@@ -236,6 +244,9 @@ end
 ---@param aManager WindowManager
 function M.create_window(aManager)
     local win = M.current_window(aManager)
+    win.WindowOpts.rowOffset = (win.Position.y - 1) * (vim.o.lines / 2)
+    win.WindowOpts.colOffset = (vim.o.columns / 2) * (win.Position.x - 1)
+
     local buf, winNumber = window.create_floating_window(win.WindowOpts)
 
     win.BufNumber = buf

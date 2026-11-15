@@ -5,6 +5,20 @@ local keybinds = require "tools.ui.buffer_selector_v2.keybinds"
 local M = {}
 
 ---@param aManager WindowManager
+local function restore_target_window(aManager)
+    local target = aManager.targetWindow
+    if target ~= nil and vim.api.nvim_win_is_valid(target) then
+        vim.api.nvim_set_current_win(target)
+    end
+end
+
+---@param aManager WindowManager
+function M.open(aManager)
+    aManager.targetWindow = vim.api.nvim_get_current_win()
+    M.refresh(aManager)
+end
+
+---@param aManager WindowManager
 function M.setAll(aManager)
     local win = state.current_window(aManager)
 
@@ -107,13 +121,18 @@ end
 function M.enter(aManager, aWindow, line)
     print(line)
     state.set_current_window(aManager, aWindow)
-    state.delete_all_windows(aManager)
-    vim.api.nvim_set_current_buf(state.current_window(aManager).BufferList[line])
+
+    local buffer = state.current_window(aManager).BufferList[line]
+
+    M.delete_all(aManager)
+
+    vim.api.nvim_set_current_buf(buffer)
 end
 
 ---@param aManager WindowManager
 function M.delete_all(aManager)
     state.delete_all_windows(aManager)
+    restore_target_window(aManager)
 end
 
 ---@param aManager WindowManager

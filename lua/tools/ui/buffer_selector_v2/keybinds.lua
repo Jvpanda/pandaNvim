@@ -84,7 +84,7 @@ end
 ---@param aManager WindowManager
 function M.attach_open(api, aManager)
     vim.keymap.set({ "n" }, "<leader>j", function()
-        api.refresh(aManager)
+        api.open(aManager)
     end, {})
 end
 
