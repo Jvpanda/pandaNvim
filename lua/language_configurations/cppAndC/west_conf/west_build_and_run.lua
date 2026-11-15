@@ -4,7 +4,7 @@ local M = {}
 
 -- [[ Editor Environment Setup]]
 M.generate_build = function()
-    local result = build_progress.await({ "west", "build", "-b", west_options.board }, {}, {
+    local result = build_progress.await({ west_options.commandPrepend, "west", "build", "-b", west_options.board }, {}, {
         title = "West",
         message = "Building (" .. west_options.board .. ")",
         successMessage = "West build succeeded",
@@ -15,13 +15,13 @@ M.generate_build = function()
 end
 
 M.flash = function()
-    local cmd = { "west", "flash" }
+    local cmd = { west_options.commandPrepend, "west", "flash" }
     if west_options.runner ~= nil then
         table.insert(cmd, "--runner")
         table.insert(cmd, west_options.runner)
     end
 
-    local result = build_progress.await({ "west", "flash", "--runner", west_options.runner }, {}, {
+    local result = build_progress.await(cmd, {}, {
         title = "West",
         message = "Flashing (" .. west_options.runner .. ")",
         successMessage = "Board flashed",

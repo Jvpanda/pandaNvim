@@ -30,6 +30,7 @@
 ---@field debugger Debugger
 ---@field compileFlags string
 ---@field buildFlags string
+---@field commandPrepend string
 local opts = {
     configuration = "Zephyr",
     buildType = "Debug",

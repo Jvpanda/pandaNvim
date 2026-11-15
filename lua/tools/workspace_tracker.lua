@@ -42,7 +42,11 @@ local function findWorkspaces(aMarkerTable)
     for _, value in pairs(found_paths) do
         local name = vim.fn.fnamemodify(value, ":p:h")
         if not duplicates[name] then
-            table.insert(paths, vim.fn.fnamemodify(value, ":p:h"))
+            if vim.fn.isdirectory(name) then
+                table.insert(paths, vim.fn.fnamemodify(value, ":p:h:h"))
+            else
+                table.insert(paths, vim.fn.fnamemodify(value, ":p:h"))
+            end
             duplicates[name] = true
         end
     end
