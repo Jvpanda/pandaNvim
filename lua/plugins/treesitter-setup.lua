@@ -1,27 +1,50 @@
 return {
-    { -- Highlight, edit, and navigate code
+    {
         "nvim-treesitter/nvim-treesitter",
+        lazy = false,
         build = ":TSUpdate",
-        -- I MADE THIS CONFIG AND IM SO DAMN PROUD. I LEARNED THE DIFFERENCE BETWEEN OPTS AND CONFIG AND HOW TO MAKE A CUSTOM CONFIG THAT SUITED MY NEEDS. YES. FUCK YOU FUCK YES.
+
         config = function()
-            require("nvim-treesitter.install").prefer_git = false
-            if vim.fn.has "win32" == 1 then
-                require("nvim-treesitter.install").compilers = { "clang", "cl", "zig" }
-            else
-                require("nvim-treesitter.install").compilers = { "gcc", "clang", "zig" }
-            end
-            require("nvim-treesitter.config").setup {
-                ensure_installed = { "python", "c", "html", "lua", "luadoc", "markdown", "markdown_inline", "vim", "vimdoc", "cpp", "yaml" },
-                auto_install = true,
-                sync_install = false,
-                ignore_install = {},
-                modules = {},
-                highlight = {
-                    enable = true,
-                    additional_vim_regex_highlighting = { "ruby" },
-                },
-                indent = { enable = true, disable = { "ruby", "cpp", "c", "markdown", "markdown_inline" } },
+            local ts = require "nvim-treesitter"
+
+            ts.setup {
+                install_dir = vim.fn.stdpath "data" .. "/site",
             }
+
+            local parsers = {
+                "python",
+                "c",
+                "html",
+                "lua",
+                "luadoc",
+                "markdown",
+                "markdown_inline",
+                "latex",
+                "vim",
+                "vimdoc",
+                "cpp",
+                "yaml",
+            }
+
+            ts.install(parsers)
+
+            -- Enable highlighting for the selected filetypes.
+            vim.api.nvim_create_autocmd("FileType", {
+                pattern = {
+                    "python",
+                    "c",
+                    "html",
+                    "lua",
+                    "markdown",
+                    "tex",
+                    "vim",
+                    "cpp",
+                    "yaml",
+                },
+                callback = function()
+                    vim.treesitter.start()
+                end,
+            })
         end,
     },
     {
